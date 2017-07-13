@@ -39,7 +39,7 @@ public class Pasjans implements Cloneable{
 	private UserInputQueue userInputQueue;
 	private GameBoard gameBoard; 
 	private Drawing drawing;
-	private int numberOfMovesMade;
+	private Areas areas;
 	private int destinationBackNumberStack;
 	private boolean undo;
 	private boolean backCard;
@@ -98,6 +98,7 @@ public class Pasjans implements Cloneable{
 	
 	public void initialize() {
 		gameBoard = new GameBoard();
+		areas = new Areas();
 		gameBoard.run();
 		back[0] = (GameBoard) gameBoard.clone();
 
@@ -127,7 +128,7 @@ public class Pasjans implements Cloneable{
 			dragDeltaX = 0;
 			dragDeltaY = 0;
 			probaPrzelozeniaKarty = false;
-			numberOfMovesMade = 0;
+			
 	
 		});
 				
@@ -181,7 +182,7 @@ public class Pasjans implements Cloneable{
 		dragDeltaX = 0;
 		dragDeltaY = 0;
 		probaPrzelozeniaKarty = false;
-		numberOfMovesMade = 0;
+		
 				
 		root = new Group();
 		canvas = new Canvas(WIDTH, HEIGHT);	
@@ -218,7 +219,7 @@ public class Pasjans implements Cloneable{
 				
 					// czy opuszczono karte na jednym ze stosów boardStack	
 					for (int i = 1; i < 11; i++)
-						if (isActionOnAreaOfBoardStack(e.getSceneX(), e.getSceneY(), i)) 	
+						if (areas.isActionOfBoardStack(gameBoard, e.getSceneX(), e.getSceneY(), i)) 	
 							if (i != sourceCardOnHand) {
 								pushOrBackCardOnHand(i, "boardStack");							
 								probaPrzelozeniaKarty = true;
@@ -343,7 +344,6 @@ public class Pasjans implements Cloneable{
 				gameBoard.pushUndo(step);
 				undoSteps.add(step);
 				gameBoard.pushCardToStack(typeStack, i, cardOnHand);					
-				numberOfMovesMade++;
 			}
 			else backCardToSourceStack();
 	}
@@ -351,8 +351,6 @@ public class Pasjans implements Cloneable{
 	public void backCardToSourceStack(){
 		for (int i = 0; i < 11; i++)
 			if (sourceCardOnHand == i) setBackCardAnimationMove();				
-			
-
 	}
 	
 	public void setBackCardAnimationMove() {
@@ -379,9 +377,6 @@ public class Pasjans implements Cloneable{
 		backCard = true;
 		
 	}
-	
-	
-	
 	
 	
 	public boolean isCompatibilityCardOnStackAndOnHand(int stackNumber, String stackType){
@@ -415,7 +410,7 @@ public class Pasjans implements Cloneable{
 			}			
 								
 			// czy kliknieto obszar na talii - widoczne karty po lewej stronie - BoardStack stos 0-y
-			if (isPressedAreaOfKartyOdlozoneStack(x, y)){
+			if (areas.isPressedKartyOdlozoneStack(gameBoard, x, y)){
 				if (gameBoard.getSizeBoardStack(0) > 0 ) {
 					cardOnHand = gameBoard.getCardFromBoardStack(0);
 					sourceCardOnHand = 0; // zabrano ze stosu KartyOdlozone	- BoardStack stos 0-y	
@@ -429,7 +424,7 @@ public class Pasjans implements Cloneable{
 			
 			// czy kliknieto jeden z obszarow 10-u stosow BoardStack
 			for (int i = 1; i < 11; i++)
-				if (isActionOnAreaOfBoardStack(x, y, i)){
+				if (areas.isActionOfBoardStack(gameBoard, x, y, i)){
 					if (gameBoard.getSizeBoardStack(i) > 0 ) {
 						cardOnHand = gameBoard.getCardFromBoardStack(i);
 						sourceCardOnHand = i; // zabrano z i stosu BoardStack					
@@ -442,19 +437,19 @@ public class Pasjans implements Cloneable{
 		}				
 	}
 	
-	public boolean isPressedAreaOfKartyOdlozoneStack(double x, double y){
+/*	public boolean isPressedAreaOfKartyOdlozoneStack(double x, double y){
 		if ((x>9) && (x<9 + Karta.CARDWIDTH) 
 				&& (y > 10 + gameBoard.visibleCardsOnLeftSide*30 - 30) && ( y< 10 + gameBoard.visibleCardsOnLeftSide*30 + Karta.CARDHEIGHT - 30)) return true;	
 		return false;
-	}
+	}*/
 	
 	
 	
-	public boolean isActionOnAreaOfBoardStack(double x, double y, int numberOfStack){
+/*	public boolean isActionOnAreaOfBoardStack(double x, double y, int numberOfStack){
 		if ((x > 24 + numberOfStack * 75) && (x < 24 + numberOfStack * 75 + Karta.CARDWIDTH) 
 				&& (y > 179 + gameBoard.getSizeBoardStack(numberOfStack) * 30 - 30) && (y < 179 + gameBoard.getSizeBoardStack(numberOfStack) * 30 + Karta.CARDHEIGHT - 30)) return true;
 		return false;
-	}
+	}*/
 	
 	public boolean isActionOnAreaOfFinishStack(double x, double y, int numberOfStack){
 		if ((x > 249 + numberOfStack * 75) && (x < 249 + numberOfStack * 75 + Karta.CARDWIDTH) 
