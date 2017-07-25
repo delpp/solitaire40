@@ -63,6 +63,8 @@ public class Pasjans implements Cloneable{
 	int countDoneFramesAnimation;
 	long timeWhenFrameShowed;
 	
+	private Button saveGame;
+	private Button loadGame;
 	private Button zapamietajUklad;
 	private Button przywrocUklad;
 	private Button noweRozdanie;
@@ -101,7 +103,34 @@ public class Pasjans implements Cloneable{
 		areas = new Areas();
 		gameBoard.run();
 		back[0] = (GameBoard) gameBoard.clone();
-
+		
+		
+		saveGame = new Button("SAVE");
+		saveGame.setLayoutX(99+250+150);
+		saveGame.setLayoutY(110);
+		
+		saveGame.setOnMousePressed(e->{	
+			try {
+				IOgame.savaGame(gameBoard);		
+			}
+			catch (Exception ex){
+				
+			}
+		});
+		
+		loadGame = new Button("LOAD");
+		loadGame.setLayoutX(99+250+220);
+		loadGame.setLayoutY(110);
+		
+		loadGame.setOnMousePressed(e->{	
+			try {
+				gameBoard = IOgame.loadGame();		
+			}
+			catch (Exception ex){
+				
+			}
+		});
+		
 		
 		zapamietajUklad = new Button("Zapamiętaj układ");
 		zapamietajUklad.setLayoutX(99+80);
@@ -109,8 +138,6 @@ public class Pasjans implements Cloneable{
 		
 		zapamietajUklad.setOnMousePressed(e->{			
 				back[0] = (GameBoard) gameBoard.clone();		
-				
-				System.out.println("Zapamiętano układ");
 		});
 		
 		noweRozdanie = new Button("Nowe rozdanie");
@@ -132,7 +159,7 @@ public class Pasjans implements Cloneable{
 	
 		});
 				
-		przywrocUklad = new Button("Resetuj układ");
+		przywrocUklad = new Button("Przywróć układ");
 		przywrocUklad.setLayoutX(99+80);
 		przywrocUklad.setLayoutY(145);
 		
@@ -141,7 +168,9 @@ public class Pasjans implements Cloneable{
 				gameBoard = (GameBoard) back[0].clone();
 				drawing.setGameBoard(gameBoard);
 				gameBoard.countVisibleCardsOnLeftSide();
-				System.out.println("Zresetowano układ");
+				gameOver = isGameOver();
+				
+				System.out.println("Przywrócono układ");
 			}
 		});
 		
@@ -160,8 +189,6 @@ public class Pasjans implements Cloneable{
 		tableOfUndos = new TableView<UndoSteps>();
 		TableColumn<UndoSteps, Integer> numberOfMoveColumn = new TableColumn("Numer ruchu");
 		numberOfMoveColumn.setMinWidth(150);
-		/*numberOfMoveColumn.setCellValueFactory(cellData ->
-			cellData.getValue().getIdProperty());*/
 		
 		tableOfUndos.setLayoutX(880);
 		tableOfUndos.setLayoutY(10);
@@ -194,6 +221,9 @@ public class Pasjans implements Cloneable{
 		root.getChildren().add(przywrocUklad);
 		root.getChildren().add(noweRozdanie);
 		root.getChildren().add(cofnij);
+		root.getChildren().add(saveGame);
+		root.getChildren().add(loadGame);
+		
 		root.getChildren().add(tableOfUndos);
 
 		scene = new Scene(root);
@@ -227,7 +257,7 @@ public class Pasjans implements Cloneable{
 							
 					// czy opuszczono karte na jednym ze stosów finalnych finalStack
 					for (int i = 0; i < 8; i++)
-						if (isActionOnAreaOfFinishStack(e.getSceneX(), e.getSceneY(), i)) {
+						if (areas.isActionOfFinishStack(gameBoard, e.getSceneX(), e.getSceneY(), i)) {
 							pushOrBackCardOnHand(i, "finishStack");
 							probaPrzelozeniaKarty = true;
 						}
@@ -295,33 +325,35 @@ public class Pasjans implements Cloneable{
 	
 	public boolean isCardFromBoardFixToAnyOther(int numberStack){
 		cardOnHand = gameBoard.getCardFromBoardStack(numberStack); 		
+		//cardOnHand = gameBoard.readCardFromStack("boardStack", numberStack);
+		
 		sourceCardOnHand = numberStack;
 		
 		System.out.println("Testuję kartę: " + cardOnHand.getCard() + " ze stosu: " + sourceCardOnHand  + ". Jego aktualny stan: " + gameBoard.getSizeBoardStack(sourceCardOnHand) + " kart");
 				
-		for (int j = 1; j < 11; j++){						
-			if (j != sourceCardOnHand) {
-				System.out.println("Sprawdzam kartę ze stosu " + j);
+		for (int j = 1; j < 11; j++){	
+			if (j == sourceCardOnHand) continue;
+
+			System.out.println("Sprawdzam kartę ze stosu " + j);
 				
-				if (isCompatibilityCardOnStackAndOnHand(j, "boardStack")) {
+			if (isCompatibilityCardOnStackAndOnHand(j, "boardStack")) {
 				
-					System.out.println("Karta ze stoku " + sourceCardOnHand + " jest kompatybilna z kartą ze stoku: " + j);
+				System.out.println("Karta ze stoku " + sourceCardOnHand + " jest kompatybilna z kartą ze stoku: " + j);
 				
-					if (!isCompatibilityCardOnStackAndOnHand(sourceCardOnHand, "boardStack")){
-						System.out.println("Karta nie może wrócić na swoje miejsce");
-						gameBoard.pushCardToBoardStack(numberStack, cardOnHand);
-						return true;
-					}	
+				if (!isCompatibilityCardOnStackAndOnHand(sourceCardOnHand, "boardStack")){
+					System.out.println("Karta nie może wrócić na swoje miejsce");
+					gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
+					return true;
+				}	
+				else {
+					if (gameBoard.getSizeBoardStack(sourceCardOnHand) > 0){
+						System.out.println("Karta może wrócić na swoje miejsce. Ten układ nie jest brany pod uwagę do kontynuacji gry");
+						gameBoard.pushCardToStack("boardStack", sourceCardOnHand, cardOnHand);
+						return false;
+					}
 					else {
-						if (gameBoard.getSizeBoardStack(sourceCardOnHand) > 0){
-							System.out.println("Karta może wrócić na swoje miejsce. Ten układ nie jest brany pod uwagę do kontynuacji gry");
-							gameBoard.pushCardToBoardStack(sourceCardOnHand, cardOnHand);
-							return false;
-						}
-						else {
-							gameBoard.pushCardToBoardStack(numberStack, cardOnHand);
-							return true;
-						}
+						gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
+						return true;
 					}
 				}
 			}
@@ -330,11 +362,11 @@ public class Pasjans implements Cloneable{
 		for (int j = 0; j < 8; j++){
 			if (isCompatibilityCardOnStackAndOnHand(j, "finishStack")) {
 				System.out.println("Karta ze stoku " + sourceCardOnHand + " jest kompatybilna z kartą ze stoku górnego: " + j);
-				gameBoard.pushCardToBoardStack(numberStack, cardOnHand);
+				gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
 				return true;
 			}
 		}		
-		gameBoard.pushCardToBoardStack(sourceCardOnHand, cardOnHand);
+		gameBoard.pushCardToStack("boardStack", sourceCardOnHand, cardOnHand);
 		return false;
 	}
 		
@@ -400,16 +432,16 @@ public class Pasjans implements Cloneable{
 		if ((mouseState.getButton() == MouseButton.PRIMARY)	&& (gameOver==false) && (animation == false)){
 			
 			// czy kliknięto obszar brania kolejnej karty (StartStack)
-			if (gameBoard.whichAreaPressedOrDropped(x, y) == -1) {
+			if (areas.isPressedStartStack(gameBoard, x, y) == -1) {
 				if (gameBoard.getSizeStartStack() > 0 ) {
 					step = new UndoSteps(gameBoard.readCardFromStartStack(), -1, "boardStack", 0);
-					gameBoard.pushCardToBoardStack(0, gameBoard.getCardFromStartStack());				
+					gameBoard.pushCardToStack("boardStack", 0, gameBoard.getCardFromStartStack());				
 					gameBoard.pushUndo(step);
 				}
 				gameBoard.countVisibleCardsOnLeftSide();	
 			}			
 								
-			// czy kliknieto obszar na talii - widoczne karty po lewej stronie - BoardStack stos 0-y
+			// czy kliknieto obszar kart odlozonych - widoczne karty po lewej stronie - BoardStack stos 0-y
 			if (areas.isPressedKartyOdlozoneStack(gameBoard, x, y)){
 				if (gameBoard.getSizeBoardStack(0) > 0 ) {
 					cardOnHand = gameBoard.getCardFromBoardStack(0);
@@ -435,28 +467,7 @@ public class Pasjans implements Cloneable{
 					}
 			}
 		}				
-	}
-	
-/*	public boolean isPressedAreaOfKartyOdlozoneStack(double x, double y){
-		if ((x>9) && (x<9 + Karta.CARDWIDTH) 
-				&& (y > 10 + gameBoard.visibleCardsOnLeftSide*30 - 30) && ( y< 10 + gameBoard.visibleCardsOnLeftSide*30 + Karta.CARDHEIGHT - 30)) return true;	
-		return false;
-	}*/
-	
-	
-	
-/*	public boolean isActionOnAreaOfBoardStack(double x, double y, int numberOfStack){
-		if ((x > 24 + numberOfStack * 75) && (x < 24 + numberOfStack * 75 + Karta.CARDWIDTH) 
-				&& (y > 179 + gameBoard.getSizeBoardStack(numberOfStack) * 30 - 30) && (y < 179 + gameBoard.getSizeBoardStack(numberOfStack) * 30 + Karta.CARDHEIGHT - 30)) return true;
-		return false;
-	}*/
-	
-	public boolean isActionOnAreaOfFinishStack(double x, double y, int numberOfStack){
-		if ((x > 249 + numberOfStack * 75) && (x < 249 + numberOfStack * 75 + Karta.CARDWIDTH) 
-				&& (y > 10) && (y < 10 + Karta.CARDHEIGHT)) return true;
-		return false;
-	}
-		
+	}	
 	
 	public void update(long currentNanoTime) {
 		handleMouseInput();		
@@ -480,7 +491,7 @@ public class Pasjans implements Cloneable{
 				undo = false;
 			}
 			if (backCard){
-				gameBoard.pushCardToBoardStack(destinationBackNumberStack, cardToAnimate);	
+				gameBoard.pushCardToStack("boardStack", destinationBackNumberStack, cardToAnimate);	
 				gameBoard.countVisibleCardsOnLeftSide();
 				backCard = false;
 				destinationBackNumberStack = -1;

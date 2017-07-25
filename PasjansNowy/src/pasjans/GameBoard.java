@@ -7,7 +7,6 @@ import java.util.Stack;
 public class GameBoard implements Cloneable {
 	private static final int STOCKSIZE = 104;	
 	private static final ArrayList<Karta> taliaStart = new ArrayList<Karta>(STOCKSIZE);
-	private static final PointXY pozXYCardOfStackStart = new PointXY(99, 10);
 	
 	private Stack<Karta> startStack = new Stack<Karta>();
 	private Stack<Karta>[] boardStack = new Stack[11];
@@ -70,12 +69,6 @@ public class GameBoard implements Cloneable {
 				finishStack[j*4 + i].add(new Karta(0, cardColor[i]));
 	}
 	
-	public int whichAreaPressedOrDropped(double x, double y){
-		if ((x>pozXYCardOfStackStart.x) && (x<pozXYCardOfStackStart.x + Karta.CARDWIDTH) 
-				&& (y>pozXYCardOfStackStart.y) && (y<pozXYCardOfStackStart.y+Karta.CARDHEIGHT)) return -1;
-		
-		return 1;
-	}
 	
 	// ustala ile ma być pokazanych kart ze stosu KartyOdlozone - max. 10
 	public void countVisibleCardsOnLeftSide(){	
@@ -145,18 +138,16 @@ public class GameBoard implements Cloneable {
 	public void undoStep(){
 		if (listSteps.size() > 0) {
 			step = getUndo();
-			//System.out.println("Odczytano kartę:" + step.card + " , która wraca z: " + step.typeTarget + " " + step.numberTarget + " na stos: " +step.numberSource);
 			if (step.numberSource >= 0) {
 				if (step.typeTarget.equals("boardStack")) getCardFromBoardStack(step.numberTarget);
 					else if (step.typeTarget.equals("finishStack")) getCardFromFinishStack(step.numberTarget);
-				pushCardToBoardStack(step.numberSource, step.card);
+				pushCardToStack("boardStack", step.numberSource, step.card);
 			}
 			if (step.numberSource < 0){
 				getCardFromBoardStack(0);
 				pushCardToStartStack(step.card);
 			}
 		}
-	//	System.out.println("Liczba kroków możliwych do cofnięcia: " + counterUndo);
 	}
 	
 	public void createFinishStacks(){
@@ -204,43 +195,28 @@ public class GameBoard implements Cloneable {
 	public Karta getCardFromBoardStack(int numberOfStack){
 		return boardStack[numberOfStack].pop();
 	}
-
-	public void pushCardToBoardStack(int numberOfStack, Karta kartaDoOdlozenia){
-		boardStack[numberOfStack].push(kartaDoOdlozenia);
-	}
-	
-	public Karta readCardFromBoardStack(int numberOfStack){
-		return boardStack[numberOfStack].peek();
-	}
-	
 	
 	
 	public int getSizeFinishStack(int numberOfStack){
 		return finishStack[numberOfStack].size();
 	}
 	
-	public Karta readCardFromFinishStack(int numberOfStack){
-		return finishStack[numberOfStack].peek();
-	}
-	
 	public Karta getCardFromFinishStack(int numberOfStack){
 		return finishStack[numberOfStack].pop();
 	}
+
 	
-	public void pushCardToFinishStack(int numberOfStack, Karta kartaDoOdlozenia){
-		finishStack[numberOfStack].push(kartaDoOdlozenia);
+	public Karta readCardFromStack(String stackType, int numerStack){
+		if (stackType.equals("boardStack")) return boardStack[numerStack].peek();
+			else if (stackType.equals("finishStack")) return finishStack[numerStack].peek();
+		return null;
 	}
 	
-	public Karta readCardFromStack(String stack, int i){
-		if (stack.equals("boardStack")) return boardStack[i].peek();
-		else return finishStack[i].peek();
+	public void pushCardToStack(String stackType, int numerStack, Karta card){
+		if (stackType.equals("boardStack")) 	boardStack[numerStack].push(card);	
+			else if (stackType.equals("finishStack")) 	finishStack[numerStack].push(card);
 	}
-	
-	public void pushCardToStack(String stack, int i, Karta card){
-		if (stack.equals("boardStack")) 	boardStack[i].push(card);	
-			else if (stack.equals("finishStack")) 	finishStack[i].push(card);
-	}
-	
+		
 	@Override
 	public Object clone() {
 			GameBoard copyGameBoard = new GameBoard();

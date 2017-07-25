@@ -70,7 +70,7 @@ public class Drawing {
 				y = tableOfCards[i].shiftVertical();
 				drawCard(x, y, 9, 10 + count*30);
 
-				gameBoard.pushCardToBoardStack(0, tableOfCards[i]);
+				gameBoard.pushCardToStack("boardStack", 0, tableOfCards[i]);
 				count++;
 			}
 		}
@@ -95,7 +95,7 @@ public class Drawing {
 					y = tableOfCards[j].shiftVertical();					
 					drawCard(x, y, 24 + i*75, 179 + count*30);
 					
-					gameBoard.pushCardToBoardStack(i, tableOfCards[j]); // odklada z powrotem karty na stos boardStack[i]
+					gameBoard.pushCardToStack("boardStack", i, tableOfCards[j]); // odklada z powrotem karty na stos boardStack[i]
 					count++;
 				}				
 			}
@@ -106,7 +106,7 @@ public class Drawing {
 		int x;
 		int y;	
 		for (int i = 0; i < 8; i++){
-			tableOfCards[0] = gameBoard.readCardFromFinishStack(i);		
+			tableOfCards[0] = gameBoard.readCardFromStack("finishStack", i);		
 			if (gameBoard.getSizeFinishStack(i) > 1) {
 				x = tableOfCards[0].shiftHorizontal();
 				y = tableOfCards[0].shiftVertical();			
