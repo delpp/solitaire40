@@ -1,12 +1,13 @@
 package pasjans;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Stack;
 
-public class GameBoard implements Cloneable {
+public class GameBoard implements Cloneable, Serializable {
 	private static final int STOCKSIZE = 104;	
-	private static final ArrayList<Karta> taliaStart = new ArrayList<Karta>(STOCKSIZE);
+	private ArrayList<Karta> taliaStart = new ArrayList<Karta>(STOCKSIZE);
 	
 	private Stack<Karta> startStack = new Stack<Karta>();
 	private Stack<Karta>[] boardStack = new Stack[11];

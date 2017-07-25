@@ -1,9 +1,10 @@
 package pasjans;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Stack;
 
-public class Karta implements Cloneable{
+public class Karta implements Cloneable, Serializable{
 	public static int[] cardNumbers;			
 	
 	public static final int CARDWIDTH = 66;

@@ -124,7 +124,10 @@ public class Pasjans implements Cloneable{
 		
 		loadGame.setOnMousePressed(e->{	
 			try {
-				gameBoard = IOgame.loadGame();		
+				gameBoard = IOgame.loadGame();
+				drawing.setGameBoard(gameBoard);
+				gameBoard.countVisibleCardsOnLeftSide();
+				gameOver = isGameOver();
 			}
 			catch (Exception ex){
 				

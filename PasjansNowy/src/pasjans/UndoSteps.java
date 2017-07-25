@@ -1,9 +1,11 @@
 package pasjans;
 
+import java.io.Serializable;
+
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
-public class UndoSteps {
+public class UndoSteps implements Serializable{
 	private static int count = 0; 
 	public Karta card;
 	public int numberSource;
