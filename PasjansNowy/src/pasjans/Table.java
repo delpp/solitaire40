@@ -15,13 +15,13 @@ public class Table {
 	private int arcWidth;
 	private int arcHeight;
 	
-	private TableView<UndoSteps> table = new TableView<UndoSteps>();
+	private TableView<UndoStep> table = new TableView<UndoStep>();
 		
 	public Table(){
 		
 	}
 	
-	public Table(Group root, int x, int y, int width, int height, int arcWidth, int arcHeight, ObservableList<UndoSteps> undos){
+	public Table(Group root, int x, int y, int width, int height, int arcWidth, int arcHeight, ObservableList<UndoStep> undos){
 		Rectangle rectangle = new Rectangle();
 		this.width = width;
 		this.height = height;
@@ -34,7 +34,7 @@ public class Table {
 		rectangle.setArcWidth(arcWidth);
 		rectangle.setArcHeight(arcHeight);
 		root.getChildren().add(rectangle);
-		ObservableList<UndoSteps> undoSteps = undos;
+		ObservableList<UndoStep> undoSteps = undos;
 	}
 	
 	

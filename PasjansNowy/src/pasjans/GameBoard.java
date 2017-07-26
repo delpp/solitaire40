@@ -6,6 +6,8 @@ import java.util.Random;
 import java.util.Stack;
 
 public class GameBoard implements Cloneable, Serializable {
+
+	private static final long serialVersionUID = 1L;
 	private static final int STOCKSIZE = 104;	
 	private ArrayList<Karta> taliaStart = new ArrayList<Karta>(STOCKSIZE);
 	
@@ -16,8 +18,8 @@ public class GameBoard implements Cloneable, Serializable {
 	private final Random random;
 	private String[] cardColor = {"trefl", "kier", "pik", "karo"};
 	
-	public ArrayList<UndoSteps> listSteps = new ArrayList<UndoSteps>();
-	private UndoSteps step = new UndoSteps();
+	public ArrayList<UndoStep> listUndoSteps = new ArrayList<UndoStep>();
+	private UndoStep step = new UndoStep();
 	
 	public int visibleCardsOnLeftSide;
 
@@ -78,34 +80,34 @@ public class GameBoard implements Cloneable, Serializable {
 		else visibleCardsOnLeftSide = 10;
 	}	
 	
-	public void pushUndo(UndoSteps step){
-		listSteps.add(step);
+	public void pushUndo(UndoStep step){
+		listUndoSteps.add(step);
 	}
 	
 	public int readCountUndoSteps(){
-		return listSteps.size();
+		return listUndoSteps.size();
 	}
 	
-	private UndoSteps getUndo(){
-		step = listSteps.get(listSteps.size()-1);
-		listSteps.remove(listSteps.size()-1);
+	private UndoStep getUndo(){
+		step = listUndoSteps.get(listUndoSteps.size()-1);
+		listUndoSteps.remove(listUndoSteps.size()-1);
 		return step;
 	}
 	
 	public Karta getCardFromUndo(){
-		step = listSteps.get(listSteps.size()-1);	
+		step = listUndoSteps.get(listUndoSteps.size()-1);	
 		return step.card;
 	}
 	
 	public int getPozXSourceUndo(){
-		step = listSteps.get(listSteps.size()-1);
+		step = listUndoSteps.get(listUndoSteps.size()-1);
 		if (step.typeTarget.equals("boardStack")) return step.numberTarget*75+24;
 			else if (step.typeTarget.equals("finishStack")) return step.numberTarget*75+249;	
 		return 9;
 	}
 	
 	public int getPozYSourceUndo(){
-		step = listSteps.get(listSteps.size()-1); 
+		step = listUndoSteps.get(listUndoSteps.size()-1); 
 		if (step.typeTarget.equals("finishStack")) return 10;		
 		if (step.typeTarget.equals("boardStack"))
 			if (step.numberTarget == 0) {
@@ -116,14 +118,14 @@ public class GameBoard implements Cloneable, Serializable {
 	}
 	
 	public int getPozXTargetUndo(){
-		step = listSteps.get(listSteps.size()-1);
+		step = listUndoSteps.get(listUndoSteps.size()-1);
 		if (step.numberSource > 0) return step.numberSource*75+24;
 			else if (step.numberSource == 0) return 9;
 		return 99;
 	}
 	
 	public int getPozYTargetUndo(){
-		step = listSteps.get(listSteps.size()-1);
+		step = listUndoSteps.get(listUndoSteps.size()-1);
 		if (step.numberSource > 0) return 179 + 30 * getSizeBoardStack(step.numberSource);
 			else if (step.numberSource == 0) {
 				if (getSizeBoardStack(0) < 10) return 10 + getSizeBoardStack(0)*30;
@@ -133,11 +135,11 @@ public class GameBoard implements Cloneable, Serializable {
 	}
 	
 	public void resetUndoSteps(){
-		listSteps.clear();
+		listUndoSteps.clear();
 	}
 	
 	public void undoStep(){
-		if (listSteps.size() > 0) {
+		if (listUndoSteps.size() > 0) {
 			step = getUndo();
 			if (step.numberSource >= 0) {
 				if (step.typeTarget.equals("boardStack")) getCardFromBoardStack(step.numberTarget);
@@ -229,7 +231,7 @@ public class GameBoard implements Cloneable, Serializable {
 			for (int i = 0; i < 8; i++) 
 				copyGameBoard.finishStack[i] = (Stack<Karta>) this.finishStack[i].clone();
 					
-			copyGameBoard.listSteps = (ArrayList<UndoSteps>) this.listSteps.clone();
+			copyGameBoard.listUndoSteps = (ArrayList<UndoStep>) this.listUndoSteps.clone();
 			return copyGameBoard;
 	}
 
