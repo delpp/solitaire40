@@ -315,7 +315,7 @@ public class Pasjans implements Cloneable{
 			temp = false;
 		}
 		
-		//count = possibleMovesFromZeroToAnyOther();
+		count = possibleMovesFromZeroToAnyOther();
 
 		if (count > 0) {
 			countOfPossibilityMoves += count;
@@ -348,8 +348,10 @@ public class Pasjans implements Cloneable{
 	}
 	
 	public boolean isCardFromBoardFixToAnyOther(int numberStack){
-		cardOnHand = gameBoard.getCardFromBoardStack(numberStack); 		
-		//cardOnHand = gameBoard.readCardFromStack("boardStack", numberStack);
+		int count = 0;
+		//cardOnHand = gameBoard.getCardFromBoardStack(numberStack); 	
+		
+		cardOnHand = gameBoard.readCardFromStack("boardStack", numberStack);
 		
 		sourceCardOnHand = numberStack;
 		
@@ -366,17 +368,17 @@ public class Pasjans implements Cloneable{
 				
 				if (!isCompatibilityCardOnStackAndOnHand(sourceCardOnHand, "boardStack")){
 					System.out.println("Karta nie może wrócić na swoje miejsce");
-					gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
+					//gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
 					return true;
 				}	
 				else {
 					if (gameBoard.getSizeBoardStack(sourceCardOnHand) > 0){
 						System.out.println("Karta może wrócić na swoje miejsce. Ten układ nie jest brany pod uwagę do kontynuacji gry");
-						gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
+						//gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
 						return false;
 					}
 					else {
-						gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
+						//gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
 						return true;
 					}
 				}
@@ -386,11 +388,11 @@ public class Pasjans implements Cloneable{
 		for (int j = 0; j < 8; j++){
 			if (isCompatibilityCardOnStackAndOnHand(j, "finishStack")) {
 				System.out.println("Karta ze stoku " + sourceCardOnHand + " jest kompatybilna z kartą ze stoku górnego: " + j);
-				gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
+				//gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
 				return true;
 			}
 		}		
-		gameBoard.pushCardToStack("boardStack", sourceCardOnHand, cardOnHand);
+		//gameBoard.pushCardToStack("boardStack", sourceCardOnHand, cardOnHand);
 		cardOnHand = null;
 		return false;
 	}
