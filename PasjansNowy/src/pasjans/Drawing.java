@@ -88,8 +88,9 @@ public class Drawing {
 			
 			if (gameBoard.getSizeBoardStack(i) > 0) {
 				
-				for (int j = 0; j < sizeStack; j++) 
+				for (int j = 0; j < sizeStack; j++) {
 					tableOfCards[j] = gameBoard.getCardFromBoardStack(i);
+				}
 				for (int j = sizeStack-1; j >= 0; j --){
 					x = tableOfCards[j].shiftHorizontal();
 					y = tableOfCards[j].shiftVertical();					
