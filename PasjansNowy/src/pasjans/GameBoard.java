@@ -21,6 +21,9 @@ public class GameBoard implements Cloneable, Serializable {
 	public ArrayList<UndoStep> listUndoSteps = new ArrayList<UndoStep>();
 	private UndoStep step = new UndoStep();
 	
+	public int ruchyJuzWykonane;
+	public int mozliweRuchy;
+	
 	public int visibleCardsOnLeftSide;
 
 	public GameBoard() {
@@ -145,11 +148,15 @@ public class GameBoard implements Cloneable, Serializable {
 				if (step.typeTarget.equals("boardStack")) getCardFromBoardStack(step.numberTarget);
 					else if (step.typeTarget.equals("finishStack")) getCardFromFinishStack(step.numberTarget);
 				pushCardToStack("boardStack", step.numberSource, step.card);
+				
 			}
 			if (step.numberSource < 0){
 				getCardFromBoardStack(0);
 				pushCardToStartStack(step.card);
+				
 			}
+			ruchyJuzWykonane = step.ruchyJuzWykonane;
+			mozliweRuchy = step.mozliweRuchy;
 		}
 	}
 	
