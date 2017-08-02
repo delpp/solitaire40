@@ -32,6 +32,10 @@ public class Karta implements Cloneable, Serializable{
 		return cardType + cardNumber;
 	}
 	
+	public int getCardNumber(){
+		return cardNumber;
+	}
+	
 	public int shiftVertical() { 
 		return cardNumber*Karta.CARDHEIGHT - Karta.CARDHEIGHT; 
 	}

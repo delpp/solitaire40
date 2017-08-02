@@ -121,21 +121,27 @@ public class Pasjans implements Cloneable{
 			gameBoard.mozliweRuchy = countPossibilityMoves();
 			sprawdzoneDostepneRuchy = 0;
 			boolean koniecTestu = false;
+			boolean zrobionoRuchKartZBoard_1_10 = false;
+			boolean zrobionoRuch = false;
+			long calkowitaLiczbaPrzetestowanychKombinacji = 0;
 			
 			gameBoard.ruchyJuzWykonane = 0;
-			
-			
 			Scanner skaner = new Scanner(System.in);
 			String a;
+			
 			
 			do {
 
 				
 				if (gameBoard.ruchyJuzWykonane < gameBoard.mozliweRuchy){
 					
-					zrobKrokZStosuStartowego();
-					zrobKrokZeStosuZeroBoard();
+					zrobionoRuch = zrobKrokZStosuStartowego();
+					zrobionoRuch = zrobKrokZeStosuZeroBoard();
+					
 					zrobKrokZeStosuBoard();
+					
+					calkowitaLiczbaPrzetestowanychKombinacji++;
+					System.out.println("Całkowita Liczba Przetestowanych Kombinacji: " + calkowitaLiczbaPrzetestowanychKombinacji);
 					
 					gameBoard.mozliweRuchy = countPossibilityMoves();
 					gameBoard.ruchyJuzWykonane = 0;
@@ -143,22 +149,21 @@ public class Pasjans implements Cloneable{
 				else 
 					if ((gameBoard.ruchyJuzWykonane == gameBoard.mozliweRuchy) && (deepSteps > 0)){						
 						zrobUndo();	
-					}
-				
-				
+					}			
 				sprawdzoneDostepneRuchy = 0;
-				System.out.println("Deep steps: " + deepSteps);
-				System.out.println();
 				
 				if (deepSteps == 0) 
 					if (gameBoard.ruchyJuzWykonane == gameBoard.mozliweRuchy){
 						System.out.println("koniecTestu = true. Deep steps: " + deepSteps + " Ruchy już wykonanane: " + gameBoard.ruchyJuzWykonane + ". Możliwe ruchy: " + gameBoard.mozliweRuchy);
 						koniecTestu = true;
 					}
-			}			
+				System.out.println("Wcisnij ENTER");
+				a = skaner.nextLine();
+			} 
 			while (!koniecTestu);
 			
 			System.out.println("WYJSCIE. Deep steps: " + deepSteps + " Ruchy już wykonanane: " + gameBoard.ruchyJuzWykonane + ". Możliwe ruchy: " + gameBoard.mozliweRuchy);
+			
 		});
 		
 		countPossiblityMoves = new Button("Oblicz mozliwe ruchy");
@@ -353,16 +358,14 @@ public class Pasjans implements Cloneable{
 	}
 	
 	public void zrobKrokZStosuStartowego(){
-		Scanner skaner = new Scanner(System.in);
-		String a;
-		System.out.println("Przechodzę przez Start Stack");
+		//System.out.println("Przechodzę przez Start Stack");
 		if (gameBoard.getSizeStartStack() > 0) {
-			System.out.println("Mozna zrobic krok z stosu startowego. Rozmiar stosu startowego: " + gameBoard.getSizeStartStack());
+			//System.out.println("Mozna zrobic krok z stosu startowego. Rozmiar stosu startowego: " + gameBoard.getSizeStartStack());
 			sprawdzoneDostepneRuchy++;
-			System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + ". Ruchy już wykonane: " + gameBoard.ruchyJuzWykonane);
+			//System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + ". Ruchy już wykonane: " + gameBoard.ruchyJuzWykonane);
 		
 			if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
-				System.out.println("Liczba ruchów wykonanych w tym układzie = 0. Stos zerowy > 0. Robię kolejny krok: biorę nową kartę ze stosu startowego");		
+				System.out.println("Liczba ruchów wykonanych w tym układzie = 0. Stos zerowy = " + gameBoard.getSizeStartStack() + " . Robię kolejny krok: biorę nową kartę ze stosu startowego: " + gameBoard.readCardFromStartStack());		
 				gameBoard.ruchyJuzWykonane++;	
 				step = new UndoStep(gameBoard.readCardFromStartStack(), -1, "boardStack", 0, gameBoard.ruchyJuzWykonane, gameBoard.mozliweRuchy);
 				gameBoard.pushCardToStack("boardStack", 0, gameBoard.getCardFromStartStack());	
@@ -373,27 +376,21 @@ public class Pasjans implements Cloneable{
 			}
 		}	
 		
-		System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + " Ruchy już wykonane na tym poziomie: " + gameBoard.ruchyJuzWykonane);
-		
-		System.out.println("Wciśnij ENTER.");
+		//System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + " Ruchy już wykonane na tym poziomie: " + gameBoard.ruchyJuzWykonane);
 
-		a = skaner.nextLine();
-		//skaner.close();
 	}
 	
-	public void zrobKrokZeStosuZeroBoard(){
-		Scanner scanner = new Scanner(System.in);
-		String s;
+	public boolean zrobKrokZeStosuZeroBoard(){
 		
-		System.out.println("Przechodzę przez Board 0");
-		System.out.println("Rozmiar Stosu Board 0: " + gameBoard.getSizeBoardStack(0));
+		//System.out.println("Przechodzę przez Board 0");
+		//System.out.println("Rozmiar Stosu Board 0: " + gameBoard.getSizeBoardStack(0));
 		
 		if (gameBoard.getSizeBoardStack(0) > 0){
 			cardOnHand = gameBoard.readCardFromStack("boardStack", 0);
 			
 			for (int i = 0; i < 8; i++) 
 				if (isCompatibilityCardOnStackAndOnHand(i, "finishStack")) 	{
-					System.out.println("MOŻNA wziąć ze stosu zerowego kartę " + cardOnHand + " i położyć na stos Final numer: " + i);
+					//System.out.println("MOŻNA wziąć ze stosu zerowego kartę " + cardOnHand + " i położyć na stos Final numer: " + i);
 					sprawdzoneDostepneRuchy++;
 					if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
 						cardOnHand = gameBoard.getCardFromBoardStack(0);
@@ -403,111 +400,65 @@ public class Pasjans implements Cloneable{
 						gameBoard.pushUndo(step);	
 						deepSteps ++;
 						gameBoard.ruchyJuzWykonane = 0;
-						gameBoard.mozliweRuchy = countPossibilityMoves();
 						System.out.println("Robię kolejny krok: biorę kartę ze stosu zerowego kartę " + cardOnHand + " i kładę ją na stos Finish numer: " + i);
-						break;
+						
+						gameBoard.mozliweRuchy = countPossibilityMoves();
+						cardOnHand = null;
+						return true;
 					}		
 				}
 			
+			
 			for (int i = 1; i <= 10; i++) 
-				if (isCompatibilityCardOnStackAndOnHand(i, "boardStack")) 	{
-					System.out.println("MOŻNA wziąć ze stosu zerowego kartę " + cardOnHand + " i położyć na stos Board numer: " + i);
-					sprawdzoneDostepneRuchy++;
+				if (cardOnHand.getCardNumber() != 1)
+					if (isCompatibilityCardOnStackAndOnHand(i, "boardStack")) 	{
+						//System.out.println("MOŻNA wziąć ze stosu zerowego kartę " + cardOnHand + " i położyć na stos Board numer: " + i);
+						sprawdzoneDostepneRuchy++;
 					
-					System.out.println("Sprawdzone dostępne ruchy : " + sprawdzoneDostepneRuchy + " Ruchy już wykonane: " + gameBoard.ruchyJuzWykonane);
-					if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
-						cardOnHand = gameBoard.getCardFromBoardStack(0);
-						gameBoard.ruchyJuzWykonane++;
-						step = new UndoStep(cardOnHand, 0, "boardStack", i, gameBoard.ruchyJuzWykonane, gameBoard.mozliweRuchy);
-						gameBoard.pushCardToStack("boardStack", i, cardOnHand);
-						gameBoard.pushUndo(step);	
-						deepSteps ++;
-						gameBoard.ruchyJuzWykonane = 0;
-						gameBoard.mozliweRuchy = countPossibilityMoves();
-						System.out.println("Robię kolejny krok: biorę kartę ze stosu zerowego kartę " + cardOnHand + " i kładę ją na stos Board numer: " + i);
-						break;
+						System.out.println("SPRAWDZONE dostępne ruchy : " + sprawdzoneDostepneRuchy + " Ruchy już wykonane: " + gameBoard.ruchyJuzWykonane + ". Mozliwe ruchy: " + gameBoard.mozliweRuchy);
+						if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
+							cardOnHand = gameBoard.getCardFromBoardStack(0);
+							gameBoard.ruchyJuzWykonane++;
+							step = new UndoStep(cardOnHand, 0, "boardStack", i, gameBoard.ruchyJuzWykonane, gameBoard.mozliweRuchy);
+							gameBoard.pushCardToStack("boardStack", i, cardOnHand);
+							gameBoard.pushUndo(step);	
+							deepSteps ++;
+							gameBoard.ruchyJuzWykonane = 0;
+							System.out.println("Robię kolejny krok: biorę kartę ze stosu zerowego kartę " + cardOnHand + " i kładę ją na stos Board numer: " + i);
+							
+							gameBoard.mozliweRuchy = countPossibilityMoves();
+							cardOnHand = null;
+							return true;
+						}
 					}
-				}
 
+			
+			
+			
 		}
-		cardOnHand = null;
-	
-		System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + " Ruchy już wykonane na tym poziomie: " + gameBoard.ruchyJuzWykonane);
-		
-		System.out.println("Wciśnij ENTER.");
-
-		s = scanner.nextLine();
-		//scanner.close();
+	return false;
+		//System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + " Ruchy już wykonane na tym poziomie: " + gameBoard.ruchyJuzWykonane);
 	}
 	
-	public void zrobKrokZeStosuBoard(){
-		boolean dokonanoRuchu = false;
-		System.out.println("Przechodzę przez Boardy 1-10");
+	public boolean zrobKrokZeStosuBoard(){
+		boolean dokonanoRuchNaFinishBoard = false;
 		
 		for (int numberStack = 1; numberStack < 11; numberStack++){
 			
 			if (gameBoard.getSizeBoardStack(numberStack) > 0){
-				System.out.println("Przechodzę przez Board " + numberStack);
-			
 				cardOnHand = gameBoard.readCardFromStack("boardStack", numberStack);
 				sourceCardOnHand = numberStack;
-			
-				System.out.println("Testuję kartę: " + cardOnHand.getCard() + " ze stosu: " + sourceCardOnHand  + ". Jego aktualny stan: " + gameBoard.getSizeBoardStack(sourceCardOnHand) + " kart");
-					
-				for (int numberOfBoardStack = 1; numberOfBoardStack < 11; numberOfBoardStack++){	
-					if (numberOfBoardStack == numberStack) continue;
-					
-					if (isCompatibilityCardOnStackAndOnHand(numberOfBoardStack, "boardStack")) 			
-						if (!isCompatibilityCardOnStackAndOnHand(sourceCardOnHand, "boardStack")){
-							//System.out.println("Można wziąć ze stosu Board numer: "  + sourceCardOnHand + " kartę " + cardOnHand + " i położyć na stos Board numer: " + numberOfBoardStack);
-							sprawdzoneDostepneRuchy++;
-							
-							System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + " Ruchy już wykonane na tym poziomie: " +gameBoard.ruchyJuzWykonane);
-							if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
-								cardOnHand = gameBoard.getCardFromBoardStack(numberStack);
-								gameBoard.ruchyJuzWykonane++;
-								step = new UndoStep(cardOnHand, numberStack, "boardStack", numberOfBoardStack, gameBoard.ruchyJuzWykonane, gameBoard.mozliweRuchy);
-								gameBoard.pushCardToStack("boardStack", numberOfBoardStack, cardOnHand);
-								gameBoard.pushUndo(step);	
-								deepSteps ++;
-								gameBoard.ruchyJuzWykonane = 0;
-								
-								System.out.println("ROBIE KOLEJNY krok: biorę kartę ze stosu " + numberStack + ": " + cardOnHand + " i kładę ją na stos Board numer: " + numberOfBoardStack);
-								gameBoard.mozliweRuchy = countPossibilityMoves();
-								dokonanoRuchu = true;
-								break;
-							}	
-						}
-						else 
-							if (gameBoard.getSizeBoardStack(sourceCardOnHand) == 0)		{	
-								//System.out.println("Można wziąć ze stosu Board numer: "  + sourceCardOnHand + " kartę " + cardOnHand + " i położyć na stos Board numer: " + numberOfBoardStack);					
-								sprawdzoneDostepneRuchy++;
-								if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
-									cardOnHand = gameBoard.getCardFromBoardStack(numberStack);
-									gameBoard.ruchyJuzWykonane++;
-									step = new UndoStep(cardOnHand, numberStack, "boardStack", numberOfBoardStack, gameBoard.ruchyJuzWykonane, gameBoard.mozliweRuchy);
-									gameBoard.pushCardToStack("boardStack", numberOfBoardStack, cardOnHand);
-									gameBoard.pushUndo(step);	
-									deepSteps ++;
-									gameBoard.ruchyJuzWykonane = 0;
-									gameBoard.mozliweRuchy = countPossibilityMoves();
-									System.out.println("RROBIE kolejny krok: biorę kartę ze stosu " + numberStack + ": " + cardOnHand + " i kładę ją na stos Board numer: " + numberOfBoardStack);
-									dokonanoRuchu = true;
-									break;	
-								}	
-							}
-				}
 				
-				if (dokonanoRuchu == false)
 				for (int numberOfFinishStack = 0; numberOfFinishStack < 8; numberOfFinishStack++){
 					if (isCompatibilityCardOnStackAndOnHand(numberOfFinishStack, "finishStack")) {
-						System.out.println("Można wziąć ze stosu Board numer: "  + sourceCardOnHand + " kartę " + cardOnHand + " i położyć na stos Finish numer: " + numberOfFinishStack);
+						//System.out.println("Można wziąć ze stosu Board numer: "  + sourceCardOnHand + " kartę " + cardOnHand + " i położyć na stos Finish numer: " + numberOfFinishStack);
 						
 						sprawdzoneDostepneRuchy++;
 						if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
 							cardOnHand = gameBoard.getCardFromBoardStack(numberStack);
 							gameBoard.ruchyJuzWykonane++;
-							System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + ". Ruchy już wykonane na tym poziomie: " + gameBoard.ruchyJuzWykonane);	
+							
+							System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + ". Ruchy już wykonane na tym poziomie: " + gameBoard.ruchyJuzWykonane + ". Mozliwe ruchy: " + gameBoard.mozliweRuchy);	
 							
 							step = new UndoStep(cardOnHand, numberStack, "finishStack", numberOfFinishStack, gameBoard.ruchyJuzWykonane, gameBoard.mozliweRuchy);
 							gameBoard.pushCardToStack("finishStack", numberOfFinishStack, cardOnHand);
@@ -516,28 +467,90 @@ public class Pasjans implements Cloneable{
 							gameBoard.ruchyJuzWykonane = 0;
 							
 							System.out.println("ROBIE kolejny krok: biorę kartę ze stosu " + numberStack + ": " + cardOnHand + " i kładę ją na stos Finish numer: " + numberOfFinishStack);
+							dokonanoRuchNaFinishBoard = true;
 							gameBoard.mozliweRuchy = countPossibilityMoves();
-							break;	
+							cardOnHand = null;
+							sourceCardOnHand = -1;
+							return true;	
 						}
 					}
 				}
-
+				
+				if (dokonanoRuchNaFinishBoard == false)
+				for (int numberOfBoardStack = 1; numberOfBoardStack < 11; numberOfBoardStack++){	
+					if (numberOfBoardStack == numberStack) continue;
+					
+					if (cardOnHand.getCardNumber() != 1)
+						if (isCompatibilityCardOnStackAndOnHand(numberOfBoardStack, "boardStack")) {
+							
+							
+							cardOnHand = gameBoard.getCardFromBoardStack(numberStack);
+							if (!isCompatibilityCardOnStackAndOnHand(sourceCardOnHand, "boardStack")){
+								
+								System.out.println("Żródłowy stos: " + sourceCardOnHand + " karty w ręku: " + cardOnHand + ". Czy karta może wrócić na swoje źródło: " + isCompatibilityCardOnStackAndOnHand(sourceCardOnHand, "boardStack"));
+								
+								sprawdzoneDostepneRuchy++;							
+								if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
+									
+									gameBoard.ruchyJuzWykonane++;
+									step = new UndoStep(cardOnHand, numberStack, "boardStack", numberOfBoardStack, gameBoard.ruchyJuzWykonane, gameBoard.mozliweRuchy);
+									gameBoard.pushCardToStack("boardStack", numberOfBoardStack, cardOnHand);
+									gameBoard.pushUndo(step);	
+									deepSteps ++;
+									gameBoard.ruchyJuzWykonane = 0;
+									System.out.println("ROBIE kolejny krok: biorę kartę ze stosu " + numberStack + ": " + cardOnHand + " i kładę ją na stos Board numer: " + numberOfBoardStack);
+									
+									gameBoard.mozliweRuchy = countPossibilityMoves();
+									cardOnHand = null;
+									sourceCardOnHand = -1;
+									return true;
+								}	
+							}
+							else 
+								if (gameBoard.getSizeBoardStack(sourceCardOnHand) == 0)		{	
+									sprawdzoneDostepneRuchy++;
+									if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
+										//cardOnHand = gameBoard.getCardFromBoardStack(numberStack);
+										gameBoard.ruchyJuzWykonane++;
+										step = new UndoStep(cardOnHand, numberStack, "boardStack", numberOfBoardStack, gameBoard.ruchyJuzWykonane, gameBoard.mozliweRuchy);
+										gameBoard.pushCardToStack("boardStack", numberOfBoardStack, cardOnHand);
+										gameBoard.pushUndo(step);	
+										deepSteps ++;
+										gameBoard.ruchyJuzWykonane = 0;
+										System.out.println("ROBIEE kolejny krok: biorę kartę ze stosu " + numberStack + ": " + cardOnHand + " i kładę ją na stos Board numer: " + numberOfBoardStack);
+										
+										gameBoard.mozliweRuchy = countPossibilityMoves();
+										cardOnHand = null;
+										sourceCardOnHand = -1;
+										return true;	
+									}	
+								}
+							gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
+						}
+							
+				}
 			
 			}
 			//gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
 			cardOnHand = null;
 			sourceCardOnHand = -1;
 		}
-
+		return false;
 	}
 	
-	public void zrobUndo(){
+	
+	public boolean zrobUndo(){
 		System.out.println("Robię UNDO");
 		gameBoard.undoStep();	
 		deepSteps--;
 		gameBoard.countVisibleCardsOnLeftSide();
-		System.out.println("Liczba możliwych ruchów na tym poziomie (po UNDO): " + gameBoard.mozliweRuchy);
-		System.out.println("Liczba ruchów wykonanych na tym poziomie (po UNDO): " + gameBoard.ruchyJuzWykonane);
+		
+		System.out.println("Zrobiono ruch karty z board 0 :" + gameBoard.zrobionoRuchKartyZBoard_0);
+		return gameBoard.zrobionoRuchKartyZBoard_0;
+		
+		
+		//System.out.println("Liczba możliwych ruchów na tym poziomie (po UNDO): " + gameBoard.mozliweRuchy);
+		//System.out.println("Liczba ruchów wykonanych na tym poziomie (po UNDO): " + gameBoard.ruchyJuzWykonane);
 	}
 
 	public void setUndoAnimationMove() {
@@ -591,10 +604,10 @@ public class Pasjans implements Cloneable{
 	public int countPossibilityMoves(){	
 		int countOfPossibilityMoves = 0;
 		int count = 0;
-		
+
 		if (gameBoard.getSizeStartStack() > 0) {
 			countOfPossibilityMoves = 1;
-			System.out.println("Można wziąć kartę ze stosu startowego");
+			//System.out.println("Można wziąć kartę ze stosu startowego");
 		}
 		count = possibleMovesFromZeroToAnyOther();
 		if (count > 0) 
@@ -608,24 +621,29 @@ public class Pasjans implements Cloneable{
 				countOfPossibilityMoves += count;
 		}	
 				
-		System.out.println("Liczba możliwych ruchów na tym poziomie: " + countOfPossibilityMoves);
+		//System.out.println("Liczba możliwych ruchów na tym poziomie: " + countOfPossibilityMoves);
 		return countOfPossibilityMoves;
 	}
 	
 	public int possibleMovesFromZeroToAnyOther(){
 		int count = 0;
+		
 		if (gameBoard.getSizeBoardStack(0) > 0){
 			cardOnHand = gameBoard.readCardFromStack("boardStack", 0);
-			for (int i = 1; i <= 10; i++) 
-				if (isCompatibilityCardOnStackAndOnHand(i, "boardStack")) 	{
-					System.out.println("Można wziąć ze stosu zerowego kartę " + cardOnHand + " i położyć na stos Board numer: " + i);
-					count++;
-				}
+			
 			for (int i = 0; i < 8; i++) 
 				if (isCompatibilityCardOnStackAndOnHand(i, "finishStack")) 	{
-					System.out.println("Można wziąć ze stosu zerowego kartę " + cardOnHand + " i położyć na stos Final numer: " + i);
-					count++;		
+					//System.out.println("Można wziąć ze stosu zerowego kartę " + cardOnHand + " i położyć na stos Final numer: " + i);
+					count++;
+					break;
 				}
+			
+			for (int i = 1; i <= 10; i++) 
+				if (cardOnHand.getCardNumber() != 1)	
+					if (isCompatibilityCardOnStackAndOnHand(i, "boardStack")) 	{
+						//System.out.println("Można wziąć ze stosu zerowego kartę " + cardOnHand + " i położyć na stos Board numer: " + i);
+						count++;
+					}			
 		}
 		cardOnHand = null;
 		return count;
@@ -636,29 +654,31 @@ public class Pasjans implements Cloneable{
 		cardOnHand = gameBoard.getCardFromBoardStack(numberStack);
 		sourceCardOnHand = numberStack;
 		
+		for (int j = 0; j < 8; j++){
+			if (isCompatibilityCardOnStackAndOnHand(j, "finishStack")) {
+				//System.out.println("Można wziąć ze stosu Board numer: "  + sourceCardOnHand + " kartę " + cardOnHand + " i położyć na stos Finish numer: " + j);
+				
+				count++;
+				break;
+			}
+		}
+		
 		for (int numberOfBoardStack = 1; numberOfBoardStack < 11; numberOfBoardStack++){	
 			if (numberOfBoardStack == numberStack) continue;
 				
+			if (cardOnHand.getCardNumber() != 1)
 			if (isCompatibilityCardOnStackAndOnHand(numberOfBoardStack, "boardStack")) 			
 				if (!isCompatibilityCardOnStackAndOnHand(sourceCardOnHand, "boardStack")){
-					System.out.println("Można wziąć ze stosu Board numer: "  + sourceCardOnHand + " kartę " + cardOnHand + " i położyć na stos Board numer: " + numberOfBoardStack);
+					//System.out.println("Można wziąć ze stosu Board numer: "  + sourceCardOnHand + " kartę " + cardOnHand + " i położyć na stos Board numer: " + numberOfBoardStack);
 					count++;
 				}
 				else 
 					if (gameBoard.getSizeBoardStack(sourceCardOnHand) == 0)		{	
-						System.out.println("Można wziąć ze stosu Board numer: "  + sourceCardOnHand + " kartę " + cardOnHand + " i położyć na stos Board numer: " + numberOfBoardStack);					
+						//System.out.println("Można wziąć ze stosu Board numer: "  + sourceCardOnHand + " kartę " + cardOnHand + " i położyć na stos Board numer: " + numberOfBoardStack);					
 						count++;	
 					}
 		}
-		
-		for (int j = 0; j < 8; j++){
-			if (isCompatibilityCardOnStackAndOnHand(j, "finishStack")) {
-				System.out.println("Można wziąć ze stosu Board numer: "  + sourceCardOnHand + " kartę " + cardOnHand + " i położyć na stos Finish numer: " + j);
 				
-				count++;
-			}
-		}
-		
 		gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
 		cardOnHand = null;
 		sourceCardOnHand = -1;
@@ -671,7 +691,16 @@ public class Pasjans implements Cloneable{
 		sourceCardOnHand = numberStack;
 		
 		System.out.println("Testuję kartę: " + cardOnHand.getCard() + " ze stosu: " + sourceCardOnHand  + ". Jego aktualny stan: " + gameBoard.getSizeBoardStack(sourceCardOnHand) + " kart");
-				
+			
+		for (int j = 0; j < 8; j++){
+			if (isCompatibilityCardOnStackAndOnHand(j, "finishStack")) {
+				System.out.println("Karta ze stoku " + sourceCardOnHand + " jest kompatybilna z kartą ze stoku górnego: " + j);
+				gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
+				cardOnHand = null;
+				return true;
+			}
+		}	
+		
 		for (int numberOfBoardStack = 1; numberOfBoardStack < 11; numberOfBoardStack++){	
 			if (numberOfBoardStack == sourceCardOnHand) continue;
 
@@ -701,16 +730,8 @@ public class Pasjans implements Cloneable{
 					}
 				}
 			}
-		}
-		
-		for (int j = 0; j < 8; j++){
-			if (isCompatibilityCardOnStackAndOnHand(j, "finishStack")) {
-				System.out.println("Karta ze stoku " + sourceCardOnHand + " jest kompatybilna z kartą ze stoku górnego: " + j);
-				gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
-				cardOnHand = null;
-				return true;
-			}
 		}		
+	
 		gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
 		cardOnHand = null;
 		return false;
