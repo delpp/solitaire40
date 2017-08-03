@@ -23,7 +23,6 @@ public class GameBoard implements Cloneable, Serializable {
 	
 	public int ruchyJuzWykonane;
 	public int mozliweRuchy;
-	public boolean zrobionoRuchKartyZBoard_0;
 	
 	public int visibleCardsOnLeftSide;
 
@@ -143,13 +142,11 @@ public class GameBoard implements Cloneable, Serializable {
 	}
 	
 	public void undoStep(){
-		zrobionoRuchKartyZBoard_0 = false;
 		if (listUndoSteps.size() > 0) {
 			step = getUndo();
 			if (step.numberSource >= 0) {
 				if (step.typeTarget.equals("boardStack")) {
 					getCardFromBoardStack(step.numberTarget);
-					if (step.numberSource == 0) zrobionoRuchKartyZBoard_0 = true;
 				}
 				else if (step.typeTarget.equals("finishStack")) getCardFromFinishStack(step.numberTarget);
 					pushCardToStack("boardStack", step.numberSource, step.card);

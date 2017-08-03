@@ -123,6 +123,7 @@ public class Pasjans implements Cloneable{
 			boolean koniecTestu = false;
 			boolean zrobionoRuchKartZBoard_1_10 = false;
 			boolean zrobionoRuch = false;
+			boolean przelozonoAsy = false;
 			long calkowitaLiczbaPrzetestowanychKombinacji = 0;
 			
 			gameBoard.ruchyJuzWykonane = 0;
@@ -134,6 +135,8 @@ public class Pasjans implements Cloneable{
 
 				
 				if (gameBoard.ruchyJuzWykonane < gameBoard.mozliweRuchy){
+					
+					przelozonoAsy = przelozWszystkieAsy();
 					
 					zrobionoRuch = zrobKrokZStosuStartowego();
 					zrobionoRuch = zrobKrokZeStosuZeroBoard();
@@ -152,13 +155,15 @@ public class Pasjans implements Cloneable{
 					}			
 				sprawdzoneDostepneRuchy = 0;
 				
+				System.out.println("Deep steps: " + deepSteps);
+				
 				if (deepSteps == 0) 
 					if (gameBoard.ruchyJuzWykonane == gameBoard.mozliweRuchy){
 						System.out.println("koniecTestu = true. Deep steps: " + deepSteps + " Ruchy już wykonanane: " + gameBoard.ruchyJuzWykonane + ". Możliwe ruchy: " + gameBoard.mozliweRuchy);
 						koniecTestu = true;
 					}
 				System.out.println("Wcisnij ENTER");
-				a = skaner.nextLine();
+				//a = skaner.nextLine();
 			} 
 			while (!koniecTestu);
 			
@@ -357,7 +362,11 @@ public class Pasjans implements Cloneable{
 		stage.setOnCloseRequest(e -> stage_CloseRequest(e));
 	}
 	
-	public void zrobKrokZStosuStartowego(){
+	public boolean przelozWszystkieAsy() {
+		return false;
+	}
+	
+	public boolean zrobKrokZStosuStartowego(){
 		//System.out.println("Przechodzę przez Start Stack");
 		if (gameBoard.getSizeStartStack() > 0) {
 			//System.out.println("Mozna zrobic krok z stosu startowego. Rozmiar stosu startowego: " + gameBoard.getSizeStartStack());
@@ -373,9 +382,10 @@ public class Pasjans implements Cloneable{
 				deepSteps ++;
 				gameBoard.ruchyJuzWykonane = 0;
 				gameBoard.mozliweRuchy = countPossibilityMoves();
+				return true;
 			}
 		}	
-		
+		return false;
 		//System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + " Ruchy już wykonane na tym poziomie: " + gameBoard.ruchyJuzWykonane);
 
 	}
@@ -539,15 +549,12 @@ public class Pasjans implements Cloneable{
 	}
 	
 	
-	public boolean zrobUndo(){
+	public void zrobUndo(){
 		System.out.println("Robię UNDO");
 		gameBoard.undoStep();	
 		deepSteps--;
 		gameBoard.countVisibleCardsOnLeftSide();
-		
-		System.out.println("Zrobiono ruch karty z board 0 :" + gameBoard.zrobionoRuchKartyZBoard_0);
-		return gameBoard.zrobionoRuchKartyZBoard_0;
-		
+	
 		
 		//System.out.println("Liczba możliwych ruchów na tym poziomie (po UNDO): " + gameBoard.mozliweRuchy);
 		//System.out.println("Liczba ruchów wykonanych na tym poziomie (po UNDO): " + gameBoard.ruchyJuzWykonane);
