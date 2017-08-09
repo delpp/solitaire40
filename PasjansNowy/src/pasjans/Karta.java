@@ -91,6 +91,7 @@ public class Karta implements Cloneable, Serializable{
 	
 	@Override
 	public String toString(){
+		if (cardNumber ==1) return "As " + cardType;
 		return cardNumber + " " + cardType;
 	}
 	
