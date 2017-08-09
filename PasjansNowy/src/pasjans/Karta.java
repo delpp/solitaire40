@@ -12,10 +12,15 @@ public class Karta implements Cloneable, Serializable{
 	
 	private int cardNumber = 0;
 	private String cardType = "";
+	private int sourceStack;
+	private int positionOnStack;
+	private Karta cardUnder;
 	
 	public Karta(){
 		cardNumber = 0;
 		cardType = "";
+		sourceStack = -1;
+		cardUnder = null;
 	}
 	
 	public Karta(int number, String type){
@@ -34,6 +39,30 @@ public class Karta implements Cloneable, Serializable{
 	
 	public int getCardNumber(){
 		return cardNumber;
+	}
+	
+	public void setSourceStack(int sourceStack){
+		this.sourceStack = sourceStack;
+	}
+	
+	public int readSourceStack(){
+		return sourceStack;
+	}
+	
+	public Karta readCardUnder(){
+		return cardUnder;
+	}
+	
+	public void setCardUnder(Karta cardUnder){
+		this.cardUnder = cardUnder;
+	}
+	
+	public void setPositionOnStack(int position){
+		positionOnStack = position;
+	}
+	
+	public int readPositionOnStack(){
+		return positionOnStack;
 	}
 	
 	public int shiftVertical() { 
