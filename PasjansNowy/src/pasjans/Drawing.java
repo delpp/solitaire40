@@ -11,8 +11,8 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 
 public class Drawing {
-	private final int WIDTH = 1200;
-	private final int HEIGHT = 580;
+	private int width;
+	private int height;
 	private GraphicsContext gc;
 	private GameBoard gameBoard;
 	private Scene scene;
@@ -22,10 +22,12 @@ public class Drawing {
 	private Image deck;
 	private Karta[] tableOfCards; 
 	
-	public Drawing(GameBoard gameBoard, GraphicsContext gc, Scene scene){
+	public Drawing(GameBoard gameBoard, GraphicsContext gc, Scene scene, int WIDTH, int HEIGHT){
 		this.gameBoard = gameBoard;
 		this.gc = gc;
 		this.scene = scene;
+		this.width = WIDTH;
+		this.height = HEIGHT;
 		gc.setFont(Font.font("Helvetica", FontWeight.BOLD, 20));					
 		gc.setFill(Color.DARKORANGE);
 		gc.setTextAlign(TextAlignment.CENTER);
@@ -40,7 +42,7 @@ public class Drawing {
 	}
 	
 	public void clearRect(){
-		gc.clearRect(0, 0, WIDTH, HEIGHT);
+		gc.clearRect(0, 0, width, height);
 	}
 	
 	public void drawBackground(){

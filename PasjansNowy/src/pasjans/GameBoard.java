@@ -2,6 +2,9 @@ package pasjans;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 import java.util.Stack;
 
@@ -19,10 +22,13 @@ public class GameBoard implements Cloneable, Serializable {
 	private String[] cardColor = {"trefl", "kier", "pik", "karo"};
 	
 	public ArrayList<UndoStep> listUndoSteps = new ArrayList<UndoStep>();
+	public int positionInUndoList;
+	
+	//private Iterator<UndoStep> iteratorUndoList = listUndoSteps.iterator();
 	private UndoStep step = new UndoStep();
 	
 	public int ruchyJuzWykonane;
-	public int mozliweRuchy;
+	public int possibleMoves;
 	
 	public int visibleCardsOnLeftSide;
 
@@ -30,6 +36,7 @@ public class GameBoard implements Cloneable, Serializable {
 		random = new Random();	
 		createFinishStacks();
 		createBoardStacks();
+		positionInUndoList = 0;
 	}
 	
 	public void run(){
@@ -84,65 +91,59 @@ public class GameBoard implements Cloneable, Serializable {
 	}	
 	
 	public void pushUndo(UndoStep step){
+/*		System.out.println("Pozycja w liście UNDO przed dodaniem ruchu: " + positionInUndoList);
+		System.out.println("Rozmiar listy UNDO przed dodaniem ruchu: " + listUndoSteps.size());*/
+		while (positionInUndoList < listUndoSteps.size())
+			listUndoSteps.remove(listUndoSteps.size()-1);
 		listUndoSteps.add(step);
+		positionInUndoList++;
+/*		System.out.println("Pozycja w liście UNDO po dodaniu ruchu: " + positionInUndoList );
+		System.out.println("Rozmiar listy UNDO po dodaniu ruchu: " + listUndoSteps.size() + "\n");*/
 	}
 	
 	public int readCountUndoSteps(){
 		return listUndoSteps.size();
 	}
 	
+	public int readPositionInUndoList(){
+		return positionInUndoList;
+	}
+	
 	private UndoStep getUndo(){
-		step = listUndoSteps.get(listUndoSteps.size()-1);
-		listUndoSteps.remove(listUndoSteps.size()-1);
+		step = listUndoSteps.get(positionInUndoList-1);
 		return step;
 	}
 	
 	public Karta getCardFromUndo(){
-		step = listUndoSteps.get(listUndoSteps.size()-1);	
+		step = listUndoSteps.get(positionInUndoList-1);	
 		return step.card;
-	}
-	
-	public int getPozXSourceUndo(){
-		step = listUndoSteps.get(listUndoSteps.size()-1);
-		if (step.typeTarget.equals("boardStack")) return step.numberTarget*75+24;
-			else if (step.typeTarget.equals("finishStack")) return step.numberTarget*75+249;	
-		return 9;
-	}
-	
-	public int getPozYSourceUndo(){
-		step = listUndoSteps.get(listUndoSteps.size()-1); 
-		if (step.typeTarget.equals("finishStack")) return 10;		
-		if (step.typeTarget.equals("boardStack"))
-			if (step.numberTarget == 0) {
-				if (getSizeBoardStack(0) >= 10) return 280;
-				else if (getSizeBoardStack(0) < 10) return 10 + getSizeBoardStack(0)*30-30;
-			}		
-		return 179 + 30 *  getSizeBoardStack(step.numberTarget)-30;
-	}
-	
-	public int getPozXTargetUndo(){
-		step = listUndoSteps.get(listUndoSteps.size()-1);
-		if (step.numberSource > 0) return step.numberSource*75+24;
-			else if (step.numberSource == 0) return 9;
-		return 99;
-	}
-	
-	public int getPozYTargetUndo(){
-		step = listUndoSteps.get(listUndoSteps.size()-1);
-		if (step.numberSource > 0) return 179 + 30 * getSizeBoardStack(step.numberSource);
-			else if (step.numberSource == 0) {
-				if (getSizeBoardStack(0) < 10) return 10 + getSizeBoardStack(0)*30;
-					else return 280; 
-			}
-		return 10;
 	}
 	
 	public void resetUndoSteps(){
 		listUndoSteps.clear();
+		positionInUndoList = 0;
 	}
 	
 	public void undoStep(){
-		if (listUndoSteps.size() > 0) {
+		step = getUndo();
+		if (step.numberSource >= 0) {
+			if (step.typeTarget.equals("boardStack")) {
+				getCardFromBoardStack(step.numberTarget);
+			}
+			else if (step.typeTarget.equals("finishStack")) getCardFromFinishStack(step.numberTarget);
+				pushCardToStack("boardStack", step.numberSource, step.card);			
+			}
+			else if (step.numberSource < 0){
+				getCardFromBoardStack(0);
+				pushCardToStartStack(step.card);				
+			}
+		ruchyJuzWykonane = step.ruchyJuzWykonane;
+		possibleMoves = step.mozliweRuchy;
+		positionInUndoList--;
+	}
+	
+	public void redoStep(){
+		if (positionInUndoList < listUndoSteps.size()){
 			step = getUndo();
 			if (step.numberSource >= 0) {
 				if (step.typeTarget.equals("boardStack")) {
@@ -157,9 +158,43 @@ public class GameBoard implements Cloneable, Serializable {
 					pushCardToStartStack(step.card);
 				
 				}
-			ruchyJuzWykonane = step.ruchyJuzWykonane;
-			mozliweRuchy = step.mozliweRuchy;
 		}
+		positionInUndoList++;
+	}
+	
+	public int getPozXSourceUndo(){
+		step = listUndoSteps.get(positionInUndoList-1);
+		if (step.typeTarget.equals("boardStack")) return step.numberTarget*75+24;
+			else if (step.typeTarget.equals("finishStack")) return step.numberTarget*75+249;	
+		return 9;
+	}
+	
+	public int getPozYSourceUndo(){
+		step = listUndoSteps.get(positionInUndoList-1); 
+		if (step.typeTarget.equals("finishStack")) return 10;		
+		if (step.typeTarget.equals("boardStack"))
+			if (step.numberTarget == 0) {
+				if (getSizeBoardStack(0) >= 10) return 280;
+				else if (getSizeBoardStack(0) < 10) return 10 + getSizeBoardStack(0)*30-30;
+			}		
+		return 179 + 30 *  getSizeBoardStack(step.numberTarget)-30;
+	}
+	
+	public int getPozXTargetUndo(){
+		step = listUndoSteps.get(positionInUndoList-1);
+		if (step.numberSource > 0) return step.numberSource*75+24;
+			else if (step.numberSource == 0) return 9;
+		return 99;
+	}
+	
+	public int getPozYTargetUndo(){
+		step = listUndoSteps.get(positionInUndoList-1);
+		if (step.numberSource > 0) return 179 + 30 * getSizeBoardStack(step.numberSource);
+			else if (step.numberSource == 0) {
+				if (getSizeBoardStack(0) < 10) return 10 + getSizeBoardStack(0)*30;
+					else return 280; 
+			}
+		return 10;
 	}
 	
 	public void createFinishStacks(){
