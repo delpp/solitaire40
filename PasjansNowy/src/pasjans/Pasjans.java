@@ -31,7 +31,7 @@ import javafx.scene.text.TextAlignment;
 public class Pasjans implements Cloneable{
 	private final int WIDTH = 900;
 	private final int HEIGHT = 580;
-	private boolean gameOver;
+	private boolean gameOverStatus;
 	private Stage stage;
 	private GameAnimationTimer animationTimer;
 	private Group root;
@@ -41,13 +41,14 @@ public class Pasjans implements Cloneable{
 	private UserInputQueue userInputQueue;
 	private GameBoard gameBoard; 
 	private PossibleMoves possibleMoves;
+	private FindSolution findSolution;
+	private GameOver gameOver;
 	private Drawing drawing;
 	private Areas areas;
 	private int destinationBackNumberStack;
 	private boolean undo;
 	private boolean backCard;
 
-	private int deepSteps;
 	private int sprawdzoneDostepneRuchy;
 
 	double dragDeltaX;
@@ -103,84 +104,19 @@ public class Pasjans implements Cloneable{
 		gameBoard = new GameBoard();
 		areas = new Areas();
 		possibleMoves = new PossibleMoves();
+		findSolution = new FindSolution();
+		gameOver = new GameOver();
 		gameBoard.run();
 		reset = (GameBoard) gameBoard.clone();
 		gameBoard.ruchyJuzWykonane = 0;
 		
-		/*checkSolutions = new Button("Sprawdź czy układ ma rozwiązanie");
+		checkSolutions = new Button("Sprawdź czy układ ma rozwiązanie");
 		checkSolutions.setLayoutX(99+250+300);
 		checkSolutions.setLayoutY(145);
 		checkSolutions.setOnMousePressed(e->{
-			deepSteps = 0;
-			
-			sprawdzoneDostepneRuchy = 0;
-			boolean koniecTestu = false;
-			boolean zrobionoRuchKartZBoard_1_10 = false;
-			boolean zrobionoRuch = false;
-			boolean przelozonoAsyLubDwojki = false;
-			long calkowitaLiczbaPrzetestowanychKombinacji = 0;
-			
-			gameBoard.ruchyJuzWykonane = 0;	
-			
-			do {
-				przelozonoAsyLubDwojki = przelozAsaLubDwojkeZBoardZero();
-			}
-			while (przelozonoAsyLubDwojki);
-			
-			do {
-				przelozonoAsyLubDwojki = przelozAsaLubDwojkeZBoard();
-			}
-			while (przelozonoAsyLubDwojki);
-			
-			gameBoard.possibleMoves = countPossibilityMoves();
-			
-			do 			
-			{		
-				System.out.println("WEWNATRZ PETLI");
-				System.out.println("gameBoard.ruchyJuzWykonane: " + gameBoard.ruchyJuzWykonane);
-				System.out.println("gameBoard.possibleMoves: " + gameBoard.possibleMoves);
-				
-				if (gameBoard.ruchyJuzWykonane < gameBoard.possibleMoves){
-					
-					do {
-						zrobionoRuch = zrobKrokZStosuStartowego();
-						przelozonoAsyLubDwojki = przelozAsaLubDwojkeZBoardZero();
-					}
-					while (przelozonoAsyLubDwojki);
-					
-					
-					zrobionoRuch = zrobKrokZeStosuZeroBoard();
-					
-					zrobKrokZeStosuBoard();
-					
-					calkowitaLiczbaPrzetestowanychKombinacji++;
-					System.out.println("Całkowita Liczba Przetestowanych Kombinacji: " + calkowitaLiczbaPrzetestowanychKombinacji);
-					
-					gameBoard.possibleMoves = countPossibilityMoves();
-					gameBoard.ruchyJuzWykonane = 0;
-				}
-				else 
-					if ((gameBoard.ruchyJuzWykonane == gameBoard.possibleMoves) && (deepSteps > 0)){						
-						zrobUndo();	
-					}			
-				sprawdzoneDostepneRuchy = 0;
-				
-				System.out.println("Deep steps: " + deepSteps + "\n");
-				
-				if (deepSteps == 0) 
-					if (gameBoard.ruchyJuzWykonane == gameBoard.possibleMoves){
-						System.out.println("koniecTestu = true. Deep steps: " + deepSteps + " Ruchy już wykonanane: " + gameBoard.ruchyJuzWykonane + ". Możliwe ruchy: " + gameBoard.possibleMoves);
-						koniecTestu = true;
-						czekajNaEnter();
-					}
-				if ((calkowitaLiczbaPrzetestowanychKombinacji == 20) || (calkowitaLiczbaPrzetestowanychKombinacji == 40)) czekajNaEnter();
-			} 
-			while (!koniecTestu);
-			
-			System.out.println("WYJSCIE. Deep steps: " + deepSteps + " Ruchy już wykonanane: " + gameBoard.ruchyJuzWykonane + ". Możliwe ruchy: " + gameBoard.possibleMoves);
-			
+			findSolution.checkSolutions(gameBoard, possibleMoves);
 		});
-		*/
+		
 		
 		countPossiblityMoves = new Button("Oblicz mozliwe ruchy");
 		countPossiblityMoves.setLayoutX(99+250+150);
@@ -215,35 +151,15 @@ public class Pasjans implements Cloneable{
 				drawing.setGameBoard(gameBoard);
 				gameBoard.countVisibleCardsOnLeftSide();
 				System.out.println("Animation: " + animation);
-				gameOver = isGameOver();
+				gameOverStatus = gameOver.isGameOver(gameBoard);
 			}
 			catch (Exception ex){
 				
 			}
 		});
 		
-		/*
-		zapamietajUklad = new Button("Zapamiętaj układ");
-		zapamietajUklad.setLayoutX(99+80);
-		zapamietajUklad.setLayoutY(110);
 		
-		zapamietajUklad.setOnMousePressed(e->{			
-				back[0] = (GameBoard) gameBoard.clone();		
-		});*/
-		
-/*		cofnij = new Button("UNDO");
-		cofnij.setLayoutX(99+250);
-		cofnij.setLayoutY(145);
-		
-		cofnij.setOnMousePressed(e->{
-			
-			if (gameBoard.readCountUndoSteps() > 0) {
-				setUndoAnimationMove();
-				undo = true;
-			}
-		});*/
-		
-		gameOver = false;
+		gameOverStatus = false;
 		animation = false;
 		
 		numberOfFramesAnimation = 10;
@@ -251,7 +167,6 @@ public class Pasjans implements Cloneable{
 		timeWhenFrameShowed = System.nanoTime();
 		
 		sourceStackNumberCardOnHand = -1;
-		//tableOfCards = new Karta[16];
 		dragDeltaX = 0;
 		dragDeltaY = 0;
 		probaPrzelozeniaKarty = false;
@@ -266,7 +181,7 @@ public class Pasjans implements Cloneable{
 		root.getChildren().add(saveGame);
 		root.getChildren().add(loadGame);
 		root.getChildren().add(countPossiblityMoves);
-		//root.getChildren().add(checkSolutions);
+		root.getChildren().add(checkSolutions);
 
 		scene = new Scene(root);
 		
@@ -286,7 +201,7 @@ public class Pasjans implements Cloneable{
 		});
 		
 		scene.setOnMouseReleased(e -> {
-			if (gameOver==false){
+			if (gameOverStatus==false){
 				if ((cardOnHand != null) && (animation==false)){
 				
 					// czy opuszczono karte na jednym ze stosów boardStack	
@@ -310,7 +225,7 @@ public class Pasjans implements Cloneable{
 					backCardToSourceStack();				
 					
 				cardOnHand = null;
-				if (animation == false) gameOver = isGameOver();
+				if (animation == false) gameOverStatus = gameOver.isGameOver(gameBoard);
 				
 				sourceStackNumberCardOnHand = -1;
 				dragDeltaX = 0;
@@ -318,369 +233,32 @@ public class Pasjans implements Cloneable{
 				pozXCardOnHand = 0;
 				pozYCardOnHand = 0;	
 				probaPrzelozeniaKarty = false;
-				//System.out.println("Gave over: " + gameOver);
+				//System.out.println("Gave over: " + gameOverStatus);
 			}
 		});
 		
 		stage.setOnCloseRequest(e -> stage_CloseRequest(e));
 	}
-	
-	public void czekajNaEnter(){
-		System.out.println("Wcisniej ENTER");
-		Scanner skaner = new Scanner(System.in);
-		String a = skaner.nextLine();
-	}
-	
-	public boolean przelozAsaLubDwojkeZBoardZero() {
-		if (gameBoard.getSizeBoardStack(0) > 0){
-			cardOnHand = gameBoard.readCardFromStack("boardStack", 0);
-			if ((cardOnHand.getCardNumber() == 1) || (cardOnHand.getCardNumber() == 2)){
-				for (int i = 0; i < 8; i++)
-					if (isCompatibilityCardOnStackAndOnHand(i, "finishStack")) 	{
-						cardOnHand = gameBoard.getCardFromBoardStack(0);
-						gameBoard.pushCardToStack("finishStack", i, cardOnHand);
-						sprawdzoneDostepneRuchy = 1;					
-						gameBoard.ruchyJuzWykonane = 1;
-						step = new UndoStep(cardOnHand, 0, "finishStack", i, gameBoard.ruchyJuzWykonane, gameBoard.possibleMoves);
-						gameBoard.pushCardToStack("finishStack", i, cardOnHand);
-						gameBoard.pushUndo(step);	
-						deepSteps ++;
-						gameBoard.ruchyJuzWykonane = 0;
-						System.out.println("Prze�o�ono " + cardOnHand + " na board final");
-						czekajNaEnter();
-						cardOnHand = null;
-						return true;
-					}
-			}
-		}		
-		return false;
-	}
-	
-	public boolean przelozAsaLubDwojkeZBoard() {
-		for (int numberStack = 1; numberStack < 11; numberStack++){
 		
-			if (gameBoard.getSizeBoardStack(numberStack) > 0){
-				cardOnHand = gameBoard.readCardFromStack("boardStack", numberStack);
-				if ((cardOnHand.getCardNumber() == 1) || (cardOnHand.getCardNumber() == 2)){
-					for (int i = 0; i < 8; i++)
-						if (isCompatibilityCardOnStackAndOnHand(i, "finishStack")) 	{
-							cardOnHand = gameBoard.getCardFromBoardStack(numberStack);
-							gameBoard.pushCardToStack("finishStack", i, cardOnHand);
-							sprawdzoneDostepneRuchy = 1;					
-							gameBoard.ruchyJuzWykonane = 1;
-							step = new UndoStep(cardOnHand, numberStack, "finishStack", i, gameBoard.ruchyJuzWykonane, gameBoard.possibleMoves);
-							gameBoard.pushCardToStack("finishStack", i, cardOnHand);
-							gameBoard.pushUndo(step);	
-							deepSteps ++;
-							gameBoard.ruchyJuzWykonane = 0;
-							System.out.println("Prze�o�ono " + cardOnHand + " z " + numberStack + " na board final");
-							czekajNaEnter();
-							cardOnHand = null;
-							return true;
-						}
-				}
-			}	
-		
-		}
-		return false;
-	}
-	
-	public boolean zrobKrokZStosuStartowego(){
-		//System.out.println("Przechodzę przez Start Stack");
-		if (gameBoard.getSizeStartStack() > 0) {
-			//System.out.println("Mozna zrobic krok z stosu startowego. Rozmiar stosu startowego: " + gameBoard.getSizeStartStack());
-			sprawdzoneDostepneRuchy++;
-			//System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + ". Ruchy już wykonane: " + gameBoard.ruchyJuzWykonane);
-		
-			if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
-				System.out.println("Liczba ruchów wykonanych w tym układzie = 0. Stos startowy = " + gameBoard.getSizeStartStack() + " . Robię kolejny krok: biorę nową kartę ze stosu startowego: " + gameBoard.readCardFromStartStack());		
-				gameBoard.ruchyJuzWykonane++;	
-				step = new UndoStep(gameBoard.readCardFromStartStack(), -1, "boardStack", 0, gameBoard.ruchyJuzWykonane, gameBoard.possibleMoves);
-				gameBoard.pushCardToStack("boardStack", 0, gameBoard.getCardFromStartStack());	
-				gameBoard.pushUndo(step);	
-				deepSteps ++;
-				gameBoard.ruchyJuzWykonane = 0;
-				gameBoard.possibleMoves = possibleMoves.count(gameBoard);
-				cardOnHand = null;
-				return true;
-			}
-		}	
-		return false;
-		//System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + " Ruchy już wykonane na tym poziomie: " + gameBoard.ruchyJuzWykonane);
 
-	}
-	
-	public boolean zrobKrokZeStosuZeroBoard(){
-		
-		//System.out.println("Przechodzę przez Board 0");
-		//System.out.println("Rozmiar Stosu Board 0: " + gameBoard.getSizeBoardStack(0));
-		
-		if (gameBoard.getSizeBoardStack(0) > 0){
-			cardOnHand = gameBoard.readCardFromStack("boardStack", 0);
-			
-			for (int i = 0; i < 8; i++) 
-				if (isCompatibilityCardOnStackAndOnHand(i, "finishStack")) 	{
-					//System.out.println("MOŻNA wziąć ze stosu zerowego kartę " + cardOnHand + " i położyć na stos Final numer: " + i);
-					sprawdzoneDostepneRuchy++;
-					if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
-						cardOnHand = gameBoard.getCardFromBoardStack(0);
-						
-						gameBoard.ruchyJuzWykonane++;
-						step = new UndoStep(cardOnHand, 0, "finishStack", i, gameBoard.ruchyJuzWykonane, gameBoard.possibleMoves);
-						gameBoard.pushCardToStack("finishStack", i, cardOnHand);
-						gameBoard.pushUndo(step);	
-						deepSteps ++;
-						gameBoard.ruchyJuzWykonane = 0;
-						System.out.println("Robię kolejny krok: biorę kartę ze stosu zerowego kartę " + cardOnHand + " i kładę ją na stos Finish numer: " + i);
-						
-						gameBoard.possibleMoves = possibleMoves.count(gameBoard);
-						cardOnHand = null;
-						return true;
-					}		
-				}
-			
-			
-			for (int i = 1; i <= 10; i++) 
-				if (cardOnHand.getCardNumber() != 1)
-					if (isCompatibilityCardOnStackAndOnHand(i, "boardStack")) 	{
-						//System.out.println("MOŻNA wziąć ze stosu zerowego kartę " + cardOnHand + " i położyć na stos Board numer: " + i);
-						sprawdzoneDostepneRuchy++;
-					
-						System.out.println("SPRAWDZONE dostępne ruchy : " + sprawdzoneDostepneRuchy + " Ruchy już wykonane: " + gameBoard.ruchyJuzWykonane + ". Mozliwe ruchy: " + gameBoard.possibleMoves);
-						if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
-							cardOnHand = gameBoard.getCardFromBoardStack(0);
-							
-							cardOnHand.setSourceStack(0);
-							
-							System.out.println("Stos: 0. " + "Wzięta z niego karta: " + cardOnHand + ". Karta pod spodem: " + gameBoard.readCardFromStack("boardStack", 0));
-							
-							
-							gameBoard.ruchyJuzWykonane++;
-							step = new UndoStep(cardOnHand, 0, "boardStack", i, gameBoard.ruchyJuzWykonane, gameBoard.possibleMoves);
-							gameBoard.pushCardToStack("boardStack", i, cardOnHand);
-							gameBoard.pushUndo(step);	
-							deepSteps ++;
-							gameBoard.ruchyJuzWykonane = 0;
-							System.out.println("Robię kolejny krok: biorę kartę ze stosu zerowego kartę " + cardOnHand + " i kładę ją na stos Board numer: " + i);
-							
-							gameBoard.possibleMoves = possibleMoves.count(gameBoard);
-							cardOnHand = null;
-							return true;
-						}
-					}		
-			
-		}
-	return false;
-		//System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + " Ruchy już wykonane na tym poziomie: " + gameBoard.ruchyJuzWykonane);
-	}
-	
-	public boolean zrobKrokZeStosuBoard(){
-		boolean dokonanoRuchNaFinishBoard = false;
-		
-		for (int numberStack = 1; numberStack < 11; numberStack++){
-			
-			if (gameBoard.getSizeBoardStack(numberStack) > 0){
-				cardOnHand = gameBoard.readCardFromStack("boardStack", numberStack);
-				sourceStackNumberCardOnHand = numberStack;
-				
-				for (int numberOfFinishStack = 0; numberOfFinishStack < 8; numberOfFinishStack++){
-					if (isCompatibilityCardOnStackAndOnHand(numberOfFinishStack, "finishStack")) {
-						//System.out.println("Można wziąć ze stosu Board numer: "  + sourceStackNumberCardOnHand + " kartę " + cardOnHand + " i położyć na stos Finish numer: " + numberOfFinishStack);
-						
-						sprawdzoneDostepneRuchy++;
-						if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
-							cardOnHand = gameBoard.getCardFromBoardStack(numberStack);
-							
-							if (gameBoard.getSizeBoardStack(numberStack)>0){
-								cardOnHand.setSourceStack(numberStack);
-								cardOnHand.setPositionOnStack(gameBoard.getSizeBoardStack(numberStack));
-								cardOnHand.setCardUnder(gameBoard.readCardFromStack("boardStack", numberStack));
-							}														
-								else {
-									cardOnHand.setSourceStack(numberStack);
-									cardOnHand.setPositionOnStack(gameBoard.getSizeBoardStack(numberStack));
-									cardOnHand.setCardUnder(null);
-								}
-							
-							System.out.println("");
-							System.out.println("Stos: " + cardOnHand.readSourceStack() +  ". Wzięta z niego karta: " + cardOnHand + ". Karta pod spodem: " + cardOnHand.readCardUnder() + ". Liczba pozostałych kart na stosie: " + cardOnHand.readPositionOnStack());
-							
-							/*System.out.println("ENETER");
-							Scanner skaner = new Scanner(System.in);
-							String a = skaner.nextLine();*/
-							
-							gameBoard.ruchyJuzWykonane++;
-							
-							System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + ". Ruchy już wykonane na tym poziomie: " + gameBoard.ruchyJuzWykonane + ". Mozliwe ruchy: " + gameBoard.possibleMoves);	
-							
-							step = new UndoStep(cardOnHand, numberStack, "finishStack", numberOfFinishStack, gameBoard.ruchyJuzWykonane, gameBoard.possibleMoves);
-							gameBoard.pushCardToStack("finishStack", numberOfFinishStack, cardOnHand);
-							gameBoard.pushUndo(step);	
-							deepSteps ++;
-							gameBoard.ruchyJuzWykonane = 0;
-							
-							System.out.println("ROBIE kolejny krok: biorę kartę ze stosu " + numberStack + ": " + cardOnHand + " i kładę ją na stos Finish numer: " + numberOfFinishStack);
-							dokonanoRuchNaFinishBoard = true;
-							gameBoard.possibleMoves = possibleMoves.count(gameBoard);
-							cardOnHand = null;
-							sourceStackNumberCardOnHand = -1;
-							return true;	
-						}
-					}
-				}
-				
-				if (dokonanoRuchNaFinishBoard == false)
-				for (int numberOfBoardStack = 1; numberOfBoardStack < 11; numberOfBoardStack++){	
-					if (numberOfBoardStack == numberStack) continue;
-					
-					if (cardOnHand.getCardNumber() != 1)
-						if (isCompatibilityCardOnStackAndOnHand(numberOfBoardStack, "boardStack")) {
-							
-							
-							cardOnHand = gameBoard.getCardFromBoardStack(numberStack);
-							if (!isCompatibilityCardOnStackAndOnHand(sourceStackNumberCardOnHand, "boardStack")){
-								
-								//System.out.println("Żródłowy stos: " + sourceStackNumberCardOnHand + " karty w ręku: " + cardOnHand + ". Czy karta może wrócić na swoje źródło: " + isCompatibilityCardOnStackAndOnHand(sourceStackNumberCardOnHand, "boardStack"));
-								
-								sprawdzoneDostepneRuchy++;							
-								if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
-									
-									gameBoard.ruchyJuzWykonane++;
-									step = new UndoStep(cardOnHand, numberStack, "boardStack", numberOfBoardStack, gameBoard.ruchyJuzWykonane, gameBoard.possibleMoves);
-									gameBoard.pushCardToStack("boardStack", numberOfBoardStack, cardOnHand);
-									gameBoard.pushUndo(step);	
-									deepSteps ++;
-									gameBoard.ruchyJuzWykonane = 0;
-									System.out.println("ROBIE kolejny krok: biorę kartę ze stosu " + numberStack + ": " + cardOnHand + " i kładę ją na stos Board numer: " + numberOfBoardStack);
-									
-									gameBoard.possibleMoves = possibleMoves.count(gameBoard);
-									cardOnHand = null;
-									sourceStackNumberCardOnHand = -1;
-									return true;
-								}	
-							}
-							else 
-								if (gameBoard.getSizeBoardStack(sourceStackNumberCardOnHand) == 0)		{	
-									sprawdzoneDostepneRuchy++;
-									if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
-										//cardOnHand = gameBoard.getCardFromBoardStack(numberStack);
-										gameBoard.ruchyJuzWykonane++;
-										step = new UndoStep(cardOnHand, numberStack, "boardStack", numberOfBoardStack, gameBoard.ruchyJuzWykonane, gameBoard.possibleMoves);
-										gameBoard.pushCardToStack("boardStack", numberOfBoardStack, cardOnHand);
-										gameBoard.pushUndo(step);	
-										deepSteps ++;
-										gameBoard.ruchyJuzWykonane = 0;
-										System.out.println("ROBIEE kolejny krok: biorę kartę ze stosu " + numberStack + ": " + cardOnHand + " i kładę ją na stos Board numer: " + numberOfBoardStack);
-										
-										gameBoard.possibleMoves = possibleMoves.count(gameBoard);
-										cardOnHand = null;
-										sourceStackNumberCardOnHand = -1;
-										return true;	
-									}	
-								}
-							gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
-						}
-							
-				}
-			
-			}
-			//gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
-			cardOnHand = null;
-			sourceStackNumberCardOnHand = -1;
-		}
-		return false;
-	}
-	
-	
-	public void zrobUndo(){
-		System.out.println("Robię UNDO");
-		gameBoard.undoStep();	
-		deepSteps--;
-		gameBoard.countVisibleCardsOnLeftSide();
-	}
-	
-	public boolean isGameOver(){	
-		if (gameBoard.getSizeStartStack() > 0) return false;
-		if (isCardFromZeroFixToAnyOther()) return false;
-						
-		for (int i = 1; i < 11; i++) 	{				
-			if (gameBoard.getSizeBoardStack(i) == 0) return false;
-			if (isCardFromBoardFixToAnyOther(i)) return false;	
-		}			
-		return true;
-	}
-	
-	public boolean isCardFromZeroFixToAnyOther(){
-		if (gameBoard.getSizeBoardStack(0) > 0){
-			cardOnHand = gameBoard.readCardFromStack("boardStack", 0);
-			for (int i = 1; i <= 10; i++) 
-				if (isCompatibilityCardOnStackAndOnHand(i, "boardStack")) {
-					cardOnHand = null;
-					return true;	
-				}
-			for (int i = 0; i < 8; i++) 
-				if (isCompatibilityCardOnStackAndOnHand(i, "finishStack")) {
-					cardOnHand = null;
-					return true;			
-				}
-		}		
-		cardOnHand = null;
-		return false;
-	}
-	
-		
-	
-	public boolean isCardFromBoardFixToAnyOther(int numberStack){
-		
-		cardOnHand = gameBoard.getCardFromBoardStack(numberStack);
-		sourceStackNumberCardOnHand = numberStack;
-		
-		System.out.println("Testuję kartę: " + cardOnHand.getCard() + " ze stosu: " + sourceStackNumberCardOnHand  + ". Jego aktualny stan: " + gameBoard.getSizeBoardStack(sourceStackNumberCardOnHand) + " kart");
-			
-		for (int j = 0; j < 8; j++){
-			if (isCompatibilityCardOnStackAndOnHand(j, "finishStack")) {
-				System.out.println("Karta ze stoku " + sourceStackNumberCardOnHand + " jest kompatybilna z kartą ze stoku górnego: " + j);
-				gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
-				cardOnHand = null;
-				return true;
-			}
-		}	
-		
-		for (int numberOfBoardStack = 1; numberOfBoardStack < 11; numberOfBoardStack++){	
-			if (numberOfBoardStack == sourceStackNumberCardOnHand) continue;
 
-			System.out.println("Sprawdzam kartę ze stosu " + numberOfBoardStack);
-				
-			if (isCompatibilityCardOnStackAndOnHand(numberOfBoardStack, "boardStack")) {
-				
-				System.out.println("Karta ze stoku " + sourceStackNumberCardOnHand + " " + cardOnHand.getCard() + " jest kompatybilna z kartą ze stoku: " + numberOfBoardStack);
-				
-				if (!isCompatibilityCardOnStackAndOnHand(sourceStackNumberCardOnHand, "boardStack")){
-					System.out.println("Karta nie może wrócić na swoje miejsce");
-					gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
-					cardOnHand = null;
-					return true;
-				}	
-				else {
-					if (gameBoard.getSizeBoardStack(sourceStackNumberCardOnHand) > 0){
-						System.out.println("Karta może wrócić na swoje miejsce. Ten układ nie jest brany pod uwagę do kontynuacji gry");
-						gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
-						cardOnHand = null;
-						return false;
-					}
-					else {
-						gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
-						cardOnHand = null;
-						return true;
-					}
-				}
-			}
-		}		
 	
-		gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
-		cardOnHand = null;
-		return false;
-	}
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+		
+	
+
 		
 	public void pushOrBackCardOnHand(int numberOfStack, String typeStack){		
 			if (isCompatibilityCardOnStackAndOnHand(numberOfStack, typeStack)){			
@@ -741,7 +319,7 @@ public class Pasjans implements Cloneable{
 		double y = mouseState.getSceneY();
 		
 		// jesli kliknieto lewy klawisz myszki
-		if ((mouseState.getButton() == MouseButton.PRIMARY)	&& (gameOver==false) && (animation == false)){
+		if ((mouseState.getButton() == MouseButton.PRIMARY)	&& (gameOverStatus==false) && (animation == false)){
 			
 			if (areas.isActionOfStartStack(gameBoard, x, y)) 
 				takeCardFromStartStack();
@@ -802,7 +380,7 @@ public class Pasjans implements Cloneable{
 		gameBoard.removeAllCardFromFinishStack();
 		gameBoard.resetUndoSteps();
 		gameBoard.run();
-		gameOver = false;			
+		gameOverStatus = false;			
 		sourceStackNumberCardOnHand = -1;
 		dragDeltaX = 0;
 		dragDeltaY = 0;
@@ -814,7 +392,7 @@ public class Pasjans implements Cloneable{
 		gameBoard = (GameBoard) reset.clone();
 		drawing.setGameBoard(gameBoard);
 		gameBoard.countVisibleCardsOnLeftSide();
-		gameOver = isGameOver();
+		gameOverStatus = gameOver.isGameOver(gameBoard);
 	}
 	
 	public void undo(){
@@ -826,7 +404,7 @@ public class Pasjans implements Cloneable{
 	
 	public void setUndoAnimationMove() {
 		animation = true;
-		gameOver = false;
+		gameOverStatus = false;
 		cardToAnimate = gameBoard.getCardFromUndo();
 		
 		xSourceAnimation = gameBoard.getPozXSourceUndo();
@@ -889,7 +467,7 @@ public class Pasjans implements Cloneable{
 			if (cardOnHand != null) drawing.drawCurrentCard(cardOnHand, pozXCardOnHand, pozYCardOnHand);		
 			if (cardToAnimate != null) drawing.drawCurrentCard(cardToAnimate, pozXCardOnHand, pozYCardOnHand);
 
-			if (gameOver) drawing.drawTextGameOver();		
+			if (gameOverStatus) drawing.drawTextGameOver();		
 	}
 	
 	
