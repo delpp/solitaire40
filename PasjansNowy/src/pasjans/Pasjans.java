@@ -290,7 +290,7 @@ public class Pasjans implements Cloneable{
 	
 		if (sourceStackNumberCardOnHand > 0) yTargetAnimation = 179 + 30 * gameBoard.getSizeBoardStack(sourceStackNumberCardOnHand);
 		if (sourceStackNumberCardOnHand == 0) {
-			if (gameBoard.getSizeBoardStack(0) < 10) yTargetAnimation = 10 + gameBoard.getSizeBoardStack(0)*30;
+			if (gameBoard.getSizeZeroBoardStack() < 10) yTargetAnimation = 10 + gameBoard.getSizeZeroBoardStack()*30;
 			else yTargetAnimation = 280; 
 		}
 	
@@ -302,7 +302,8 @@ public class Pasjans implements Cloneable{
 	
 	
 	public boolean isCompatibilityCardOnStackAndOnHand(int stackNumber, String stackType){
-		if ((stackType.equals("boardStack")) && (gameBoard.getSizeBoardStack(stackNumber)==0)) return true;
+		if (stackType.equals("boardStack")) 
+			if ((gameBoard.getSizeZeroBoardStack() == 0) || (gameBoard.getSizeBoardStack(stackNumber) == 0)) return true;
 		
 		if (stackType.equals("boardStack")) 
 				return cardOnHand.canPutCardToDecreaseStack(gameBoard.readCardFromStack(stackType, stackNumber));
@@ -352,8 +353,8 @@ public class Pasjans implements Cloneable{
 	}
 	
 	public void takeCardFromBoardZeroStack(double x, double y){
-		if (gameBoard.getSizeBoardStack(0) > 0 ) {
-			cardOnHand = gameBoard.getCardFromBoardStack(0);
+		if (gameBoard.getSizeZeroBoardStack() > 0 ) {
+			cardOnHand = gameBoard.getCardFromZeroBoardStack();
 			sourceStackNumberCardOnHand = 0; // zabrano ze stosu KartyOdlozone	- BoardStack stos 0-y	
 			dragDeltaX = x - 9;
 			dragDeltaY = y - 10 - gameBoard.visibleCardsOnLeftSide*30+30;
@@ -376,8 +377,10 @@ public class Pasjans implements Cloneable{
 	
 	public void newGame(){
 		gameBoard.removeAllCardFromStartStack();
+		gameBoard.removeAllCardFromZeroBoardStack();
 		gameBoard.removeAllCardFromBoardStack();
 		gameBoard.removeAllCardFromFinishStack();
+
 		gameBoard.resetUndoSteps();
 		gameBoard.run();
 		gameOverStatus = false;			

@@ -2,7 +2,6 @@ package pasjans;
 
 public class GameOver {
 	private static Karta cardOnHand;
-	private int sourceStackNumberCardOnHand;
 	
 	public boolean isGameOver(GameBoard gameBoard){	
 		if (gameBoard.getSizeStartStack() > 0) return false;
@@ -16,7 +15,7 @@ public class GameOver {
 	}
 	
 	public boolean isCardFromZeroFixToAnyOther(GameBoard gameBoard){
-		if (gameBoard.getSizeBoardStack(0) > 0){
+		if (gameBoard.getSizeZeroBoardStack() > 0){
 			cardOnHand = gameBoard.readCardFromStack("boardStack", 0);
 			for (int i = 1; i <= 10; i++) 
 				if (isCompatibilityCardOnStackAndOnHand(i, "boardStack", gameBoard)) {
@@ -33,17 +32,17 @@ public class GameOver {
 		return false;
 	}
 	
-	public boolean isCardFromBoardFixToAnyOther(int numberStack, GameBoard gameBoard){
+	public boolean isCardFromBoardFixToAnyOther(int sourceStackNumberCardOnHand, GameBoard gameBoard){
 		
-		cardOnHand = gameBoard.getCardFromBoardStack(numberStack);
-		sourceStackNumberCardOnHand = numberStack;
+		cardOnHand = gameBoard.getCardFromBoardStack(sourceStackNumberCardOnHand);
+		//sourceStackNumberCardOnHand = numberStack;
 		
 		System.out.println("Testuję kartę: " + cardOnHand.getCard() + " ze stosu: " + sourceStackNumberCardOnHand  + ". Jego aktualny stan: " + gameBoard.getSizeBoardStack(sourceStackNumberCardOnHand) + " kart");
 			
 		for (int j = 0; j < 8; j++){
 			if (isCompatibilityCardOnStackAndOnHand(j, "finishStack", gameBoard)) {
 				System.out.println("Karta ze stoku " + sourceStackNumberCardOnHand + " jest kompatybilna z kartą ze stoku górnego: " + j);
-				gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
+				gameBoard.pushCardToStack("boardStack", sourceStackNumberCardOnHand, cardOnHand);
 				cardOnHand = null;
 				return true;
 			}
@@ -57,26 +56,28 @@ public class GameOver {
 			if (isCompatibilityCardOnStackAndOnHand(numberOfBoardStack, "boardStack", gameBoard)) {
 				
 				System.out.println("Karta ze stoku " + sourceStackNumberCardOnHand + " " + cardOnHand.getCard() + " jest kompatybilna z kartą ze stoku: " + numberOfBoardStack);
-				
+
 				if (!isCompatibilityCardOnStackAndOnHand(sourceStackNumberCardOnHand, "boardStack", gameBoard)){
-					System.out.println("Karta nie może wrócić na swoje miejsce");
-					gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
+					System.out.println("Karta nie może wrócić na swoje miejsce. Ten ruch jest brany pod uwagę.");
+					gameBoard.pushCardToStack("boardStack", sourceStackNumberCardOnHand, cardOnHand);
 					cardOnHand = null;
 					return true;
 				}	
-				else {
+				else 
+				{
 					if (gameBoard.getSizeBoardStack(sourceStackNumberCardOnHand) > 0){
 						
 					//	if (isCardFromBoardFixToAnyOther)
 							
 							
 						System.out.println("Karta może wrócić na swoje miejsce. Ten układ nie jest brany pod uwagę do kontynuacji gry");
-						gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
+						gameBoard.pushCardToStack("boardStack", sourceStackNumberCardOnHand, cardOnHand);
 						cardOnHand = null;
 						return false;
 					}
 					else {
-						gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
+						System.out.println("Karta może wrócić na swoje miejsce, bo będzie w tym miejscu pusto. Ten ruch jest brany pod uwagę.");
+						gameBoard.pushCardToStack("boardStack", sourceStackNumberCardOnHand, cardOnHand);
 						cardOnHand = null;
 						return true;
 					}
@@ -84,7 +85,7 @@ public class GameOver {
 			}
 		}		
 	
-		gameBoard.pushCardToStack("boardStack", numberStack, cardOnHand);
+		gameBoard.pushCardToStack("boardStack", sourceStackNumberCardOnHand, cardOnHand);
 		cardOnHand = null;
 		return false;
 	}

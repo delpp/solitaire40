@@ -65,7 +65,7 @@ public class Drawing {
 		if (gameBoard.visibleCardsOnLeftSide > 0){
 			// pokazuje po lewej stronie max. 10 pierwszych kart ze stosu KartyOdlozone
 			for (int i = 0; i < gameBoard.visibleCardsOnLeftSide; i ++) 
-				tableOfCards[i] = gameBoard.getCardFromBoardStack(0);
+				tableOfCards[i] = gameBoard.getCardFromZeroBoardStack();
 				
 			for (int i = gameBoard.visibleCardsOnLeftSide-1; i >= 0; i--){
 				x = tableOfCards[i].shiftHorizontal();

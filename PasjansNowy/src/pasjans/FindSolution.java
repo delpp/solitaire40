@@ -1,6 +1,8 @@
 package pasjans;
 
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 public class FindSolution {
 	private static Karta cardOnHand;
@@ -13,9 +15,12 @@ public class FindSolution {
 	private long calkowitaLiczbaPrzetestowanychKombinacji;
 	private UndoStep step;
 	private int sourceStackNumberCardOnHand;
+	private Set<GameBoard> possibleLayoutsOfCards;
+	private GameBoard copyGameBoard;
 	
 	
 	public void checkSolutions(GameBoard gameBoard, PossibleMoves possibleMoves){
+		possibleLayoutsOfCards = new HashSet();
 		deepSteps = 0;
 		calkowitaLiczbaPrzetestowanychKombinacji = 0;
 		gameBoard.ruchyJuzWykonane = 0;	
@@ -34,7 +39,9 @@ public class FindSolution {
 	
 	gameBoard.possibleMoves = possibleMoves.count(gameBoard);
 	
-	System.out.println("Całkowita Liczba Przetestowanych Kombinacji przed pętlą: " + calkowitaLiczbaPrzetestowanychKombinacji);
+	System.out.println("Całkowita Liczba Przetestowanych Kombinacji przed pętlą: " + calkowitaLiczbaPrzetestowanychKombinacji + "\n");
+	System.out.println("Liczba możliwych ruchów na tym poziomie: " + gameBoard.possibleMoves);
+	czekajNaEnter();
 	do 			
 	{		
 		System.out.println("WEWNATRZ PETLI");
@@ -43,11 +50,13 @@ public class FindSolution {
 		
 		if (gameBoard.ruchyJuzWykonane < gameBoard.possibleMoves){
 			
-			do {
+			zrobionoRuch = zrobKrokZStosuStartowego(gameBoard, possibleMoves);
+			
+			/*do {
 				zrobionoRuch = zrobKrokZStosuStartowego(gameBoard, possibleMoves);
 				przelozonoAsyLubDwojki = przelozAsaLubDwojkeZBoardZero(gameBoard);
 			}
-			while (przelozonoAsyLubDwojki);
+			while (przelozonoAsyLubDwojki);*/
 			
 			
 			zrobionoRuch = zrobKrokZeStosuZeroBoard(gameBoard, possibleMoves);
@@ -74,7 +83,7 @@ public class FindSolution {
 				koniecTestu = true;
 				czekajNaEnter();
 			}
-		if ((calkowitaLiczbaPrzetestowanychKombinacji == 20) || (calkowitaLiczbaPrzetestowanychKombinacji == 40)) czekajNaEnter();
+		if ((calkowitaLiczbaPrzetestowanychKombinacji == 20) || (calkowitaLiczbaPrzetestowanychKombinacji == 20)) czekajNaEnter();
 	} 
 	while (!koniecTestu);
 	
@@ -83,12 +92,12 @@ public class FindSolution {
 };
 
 	public boolean przelozAsaLubDwojkeZBoardZero(GameBoard gameBoard) {
-		if (gameBoard.getSizeBoardStack(0) > 0){
+		if (gameBoard.getSizeZeroBoardStack() > 0){
 			cardOnHand = gameBoard.readCardFromStack("boardStack", 0);
 			if ((cardOnHand.getCardNumber() == 1) || (cardOnHand.getCardNumber() == 2)){
 				for (int i = 0; i < 8; i++)
 					if (isCompatibilityCardOnStackAndOnHand(i, "finishStack", gameBoard)) 	{
-						cardOnHand = gameBoard.getCardFromBoardStack(0);
+						cardOnHand = gameBoard.getCardFromZeroBoardStack();
 						gameBoard.pushCardToStack("finishStack", i, cardOnHand);
 						sprawdzoneDostepneRuchy = 1;					
 						gameBoard.ruchyJuzWykonane = 1;
@@ -98,7 +107,7 @@ public class FindSolution {
 						deepSteps ++;
 						gameBoard.ruchyJuzWykonane = 0;
 						System.out.println("Przelozono " + cardOnHand + " na board final");
-						czekajNaEnter();
+						//czekajNaEnter();
 						cardOnHand = null;
 						return true;
 					}
@@ -125,7 +134,7 @@ public class FindSolution {
 							deepSteps ++;
 							gameBoard.ruchyJuzWykonane = 0;
 							System.out.println("Prze�o�ono " + cardOnHand + " z " + numberStack + " na board final");
-							czekajNaEnter();
+							//czekajNaEnter();
 							cardOnHand = null;
 							return true;
 						}
@@ -139,7 +148,7 @@ public class FindSolution {
 	public boolean zrobKrokZStosuStartowego(GameBoard gameBoard, PossibleMoves possibleMoves){
 		System.out.println("Przechodzę przez Start Stack");
 		if (gameBoard.getSizeStartStack() > 0) {
-			//System.out.println("Mozna zrobic krok z stosu startowego. Rozmiar stosu startowego: " + gameBoard.getSizeStartStack());
+			System.out.println("Mozna zrobic krok z stosu startowego. Rozmiar stosu startowego: " + gameBoard.getSizeStartStack());
 			sprawdzoneDostepneRuchy++;
 			//System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + ". Ruchy już wykonane: " + gameBoard.ruchyJuzWykonane);
 		
@@ -153,6 +162,9 @@ public class FindSolution {
 				gameBoard.ruchyJuzWykonane = 0;
 				gameBoard.possibleMoves = possibleMoves.count(gameBoard);
 				cardOnHand = null;
+				
+				possibleLayoutsOfCards.add((GameBoard) gameBoard.clone());
+				
 				return true;
 			}
 		}	
@@ -164,9 +176,9 @@ public class FindSolution {
 	public boolean zrobKrokZeStosuZeroBoard(GameBoard gameBoard, PossibleMoves possibleMoves){
 		
 		System.out.println("Przechodzę przez Board 0");
-		//System.out.println("Rozmiar Stosu Board 0: " + gameBoard.getSizeBoardStack(0));
+		//System.out.println("Rozmiar Stosu Board 0: " + gameBoard.getSizeZeroBoardStack());
 		
-		if (gameBoard.getSizeBoardStack(0) > 0){
+		if (gameBoard.getSizeZeroBoardStack() > 0){
 			cardOnHand = gameBoard.readCardFromStack("boardStack", 0);
 			
 			for (int i = 0; i < 8; i++) 
@@ -174,7 +186,7 @@ public class FindSolution {
 					//System.out.println("MOŻNA wziąć ze stosu zerowego kartę " + cardOnHand + " i położyć na stos Final numer: " + i);
 					sprawdzoneDostepneRuchy++;
 					if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
-						cardOnHand = gameBoard.getCardFromBoardStack(0);
+						cardOnHand = gameBoard.getCardFromZeroBoardStack();
 						
 						gameBoard.ruchyJuzWykonane++;
 						step = new UndoStep(cardOnHand, 0, "finishStack", i, gameBoard.ruchyJuzWykonane, gameBoard.possibleMoves);
@@ -199,7 +211,7 @@ public class FindSolution {
 					
 						System.out.println("SPRAWDZONE dostępne ruchy : " + sprawdzoneDostepneRuchy + " Ruchy już wykonane: " + gameBoard.ruchyJuzWykonane + ". Mozliwe ruchy: " + gameBoard.possibleMoves);
 						if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
-							cardOnHand = gameBoard.getCardFromBoardStack(0);
+							cardOnHand = gameBoard.getCardFromZeroBoardStack();
 							
 							cardOnHand.setSourceStack(0);
 							
@@ -256,10 +268,6 @@ public class FindSolution {
 							System.out.println("");
 							System.out.println("Stos: " + cardOnHand.readSourceStack() +  ". Wzięta z niego karta: " + cardOnHand + ". Karta pod spodem: " + cardOnHand.readCardUnder() + ". Liczba pozostałych kart na stosie: " + cardOnHand.readPositionOnStack());
 							
-							/*System.out.println("ENETER");
-							Scanner skaner = new Scanner(System.in);
-							String a = skaner.nextLine();*/
-							
 							gameBoard.ruchyJuzWykonane++;
 							
 							System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + ". Ruchy już wykonane na tym poziomie: " + gameBoard.ruchyJuzWykonane + ". Mozliwe ruchy: " + gameBoard.possibleMoves);	
@@ -289,7 +297,24 @@ public class FindSolution {
 							
 							
 							cardOnHand = gameBoard.getCardFromBoardStack(numberStack);
-							if (!isCompatibilityCardOnStackAndOnHand(sourceStackNumberCardOnHand, "boardStack", gameBoard)){
+							
+							if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
+								
+								gameBoard.ruchyJuzWykonane++;
+								step = new UndoStep(cardOnHand, numberStack, "boardStack", numberOfBoardStack, gameBoard.ruchyJuzWykonane, gameBoard.possibleMoves);
+								gameBoard.pushCardToStack("boardStack", numberOfBoardStack, cardOnHand);
+								gameBoard.pushUndo(step);	
+								deepSteps ++;
+								gameBoard.ruchyJuzWykonane = 0;
+								System.out.println("ROBIE kolejny krok: biorę kartę ze stosu " + numberStack + ": " + cardOnHand + " i kładę ją na stos Board numer: " + numberOfBoardStack);
+								
+								gameBoard.possibleMoves = possibleMoves.count(gameBoard);
+								cardOnHand = null;
+								sourceStackNumberCardOnHand = -1;
+								return true;
+							}
+							
+							/*if (!isCompatibilityCardOnStackAndOnHand(sourceStackNumberCardOnHand, "boardStack", gameBoard)){
 								
 								//System.out.println("Żródłowy stos: " + sourceStackNumberCardOnHand + " karty w ręku: " + cardOnHand + ". Czy karta może wrócić na swoje źródło: " + isCompatibilityCardOnStackAndOnHand(sourceStackNumberCardOnHand, "boardStack"));
 								
@@ -309,7 +334,7 @@ public class FindSolution {
 									sourceStackNumberCardOnHand = -1;
 									return true;
 								}	
-							}
+							}*/
 							/*else 
 								if (gameBoard.getSizeBoardStack(sourceStackNumberCardOnHand) == 0)		{	
 									sprawdzoneDostepneRuchy++;

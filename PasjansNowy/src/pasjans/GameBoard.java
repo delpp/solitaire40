@@ -2,6 +2,7 @@ package pasjans;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,6 +16,7 @@ public class GameBoard implements Cloneable, Serializable {
 	private ArrayList<Karta> taliaStart = new ArrayList<Karta>(STOCKSIZE);
 	
 	private Stack<Karta> startStack = new Stack<Karta>();
+	private Stack<Karta> zeroBoardStack = new Stack<Karta>();
 	private Stack<Karta>[] boardStack = new Stack[11];
 	private Stack<Karta>[] finishStack = new Stack[8];
 	
@@ -24,7 +26,6 @@ public class GameBoard implements Cloneable, Serializable {
 	public ArrayList<UndoStep> listUndoSteps = new ArrayList<UndoStep>();
 	public int positionInUndoList;
 	
-	//private Iterator<UndoStep> iteratorUndoList = listUndoSteps.iterator();
 	private UndoStep step = new UndoStep();
 	
 	public int ruchyJuzWykonane;
@@ -85,8 +86,8 @@ public class GameBoard implements Cloneable, Serializable {
 	
 	// ustala ile ma być pokazanych kart ze stosu KartyOdlozone - max. 10
 	public void countVisibleCardsOnLeftSide(){	
-		if (getSizeBoardStack(0) < 10)
-			visibleCardsOnLeftSide = getSizeBoardStack(0);
+		if (getSizeZeroBoardStack() < 10)
+			visibleCardsOnLeftSide = getSizeZeroBoardStack();
 		else visibleCardsOnLeftSide = 10;
 	}	
 	
@@ -99,6 +100,10 @@ public class GameBoard implements Cloneable, Serializable {
 		positionInUndoList++;
 /*		System.out.println("Pozycja w liście UNDO po dodaniu ruchu: " + positionInUndoList );
 		System.out.println("Rozmiar listy UNDO po dodaniu ruchu: " + listUndoSteps.size() + "\n");*/
+	}
+	
+	public int getSizeZeroBoardStack(){
+		return zeroBoardStack.size();
 	}
 	
 	public int readCountUndoSteps(){
@@ -134,7 +139,7 @@ public class GameBoard implements Cloneable, Serializable {
 				pushCardToStack("boardStack", step.numberSource, step.card);			
 			}
 			else if (step.numberSource < 0){
-				getCardFromBoardStack(0);
+				getCardFromZeroBoardStack();
 				pushCardToStartStack(step.card);				
 			}
 		ruchyJuzWykonane = step.ruchyJuzWykonane;
@@ -154,9 +159,8 @@ public class GameBoard implements Cloneable, Serializable {
 				
 			}
 			else if (step.numberSource < 0){
-					getCardFromBoardStack(0);
-					pushCardToStartStack(step.card);
-				
+					getCardFromZeroBoardStack();
+					pushCardToStartStack(step.card);				
 				}
 		}
 		positionInUndoList++;
@@ -174,8 +178,8 @@ public class GameBoard implements Cloneable, Serializable {
 		if (step.typeTarget.equals("finishStack")) return 10;		
 		if (step.typeTarget.equals("boardStack"))
 			if (step.numberTarget == 0) {
-				if (getSizeBoardStack(0) >= 10) return 280;
-				else if (getSizeBoardStack(0) < 10) return 10 + getSizeBoardStack(0)*30-30;
+				if (getSizeZeroBoardStack() >= 10) return 280;
+				else if (getSizeZeroBoardStack() < 10) return 10 + getSizeZeroBoardStack()*30-30;
 			}		
 		return 179 + 30 *  getSizeBoardStack(step.numberTarget)-30;
 	}
@@ -191,7 +195,7 @@ public class GameBoard implements Cloneable, Serializable {
 		step = listUndoSteps.get(positionInUndoList-1);
 		if (step.numberSource > 0) return 179 + 30 * getSizeBoardStack(step.numberSource);
 			else if (step.numberSource == 0) {
-				if (getSizeBoardStack(0) < 10) return 10 + getSizeBoardStack(0)*30;
+				if (getSizeZeroBoardStack() < 10) return 10 + getSizeZeroBoardStack()*30;
 					else return 280; 
 			}
 		return 10;
@@ -207,6 +211,10 @@ public class GameBoard implements Cloneable, Serializable {
 	
 	public void removeAllCardFromStartStack(){
 		startStack.removeAllElements();
+	}
+	
+	public void removeAllCardFromZeroBoardStack(){
+		zeroBoardStack.removeAllElements();
 	}
 	
 	public void removeAllCardFromBoardStack(){
@@ -251,19 +259,62 @@ public class GameBoard implements Cloneable, Serializable {
 	public Karta getCardFromFinishStack(int numberOfStack){
 		return finishStack[numberOfStack].pop();
 	}
+	
+	public Karta getCardFromZeroBoardStack(){
+		return zeroBoardStack.pop();
+	}
 
 	
-	public Karta readCardFromStack(String stackType, int numerStack){
-		if (stackType.equals("boardStack")) return boardStack[numerStack].peek();
-			else if (stackType.equals("finishStack")) return finishStack[numerStack].peek();
+	public Karta readCardFromStack(String stackType, int numberStack){
+		if (stackType.equals("boardStack")) {
+			if (numberStack == 0) return zeroBoardStack.peek();
+			else return boardStack[numberStack].peek();
+		}
+			else if (stackType.equals("finishStack")) return finishStack[numberStack].peek();
 		return null;
 	}
 	
-	public void pushCardToStack(String stackType, int numerStack, Karta card){
-		if (stackType.equals("boardStack")) 	boardStack[numerStack].push(card);	
-			else if (stackType.equals("finishStack")) 	finishStack[numerStack].push(card);
+	public void pushCardToStack(String stackType, int numberStack, Karta card){		
+		if (stackType.equals("boardStack")) 	{
+			if (numberStack == 0) zeroBoardStack.push(card);
+			else boardStack[numberStack].push(card);	
+		}
+			else if (stackType.equals("finishStack")) 	finishStack[numberStack].push(card);
 	}
+	
+	
 		
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(boardStack);
+		result = prime * result + Arrays.hashCode(finishStack);
+		result = prime * result + ((startStack == null) ? 0 : startStack.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		GameBoard other = (GameBoard) obj;
+		if (!Arrays.equals(boardStack, other.boardStack))
+			return false;
+		if (!Arrays.equals(finishStack, other.finishStack))
+			return false;
+		if (startStack == null) {
+			if (other.startStack != null)
+				return false;
+		} else if (!startStack.equals(other.startStack))
+			return false;
+		return true;
+	}
+
 	@Override
 	public Object clone() {
 			GameBoard copyGameBoard = new GameBoard();
