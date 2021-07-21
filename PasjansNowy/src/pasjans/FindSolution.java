@@ -23,7 +23,7 @@ public class FindSolution {
 		possibleLayoutsOfCards = new HashSet();
 		deepSteps = 0;
 		calkowitaLiczbaPrzetestowanychKombinacji = 0;
-		gameBoard.ruchyJuzWykonane = 0;	
+		gameBoard.movesDone = 0;	
 		przelozonoAsyLubDwojki = false;
 		koniecTestu = false;
 		
@@ -45,10 +45,10 @@ public class FindSolution {
 	do 			
 	{		
 		System.out.println("WEWNATRZ PETLI");
-		System.out.println("gameBoard.ruchyJuzWykonane: " + gameBoard.ruchyJuzWykonane);
+		System.out.println("gameBoard.ruchyJuzWykonane: " + gameBoard.movesDone);
 		System.out.println("gameBoard.possibleMoves: " + gameBoard.possibleMoves);
 		
-		if (gameBoard.ruchyJuzWykonane < gameBoard.possibleMoves){
+		if (gameBoard.movesDone < gameBoard.possibleMoves){
 			
 			zrobionoRuch = zrobKrokZStosuStartowego(gameBoard, possibleMoves);
 			
@@ -67,10 +67,10 @@ public class FindSolution {
 			System.out.println("Całkowita Liczba Przetestowanych Kombinacji: " + calkowitaLiczbaPrzetestowanychKombinacji);
 			
 			gameBoard.possibleMoves = possibleMoves.count(gameBoard);
-			gameBoard.ruchyJuzWykonane = 0;
+			gameBoard.movesDone = 0;
 		}
 		else 
-			if ((gameBoard.ruchyJuzWykonane == gameBoard.possibleMoves) && (deepSteps > 0)){						
+			if ((gameBoard.movesDone == gameBoard.possibleMoves) && (deepSteps > 0)){						
 				zrobUndo(gameBoard);	
 			}			
 		sprawdzoneDostepneRuchy = 0;
@@ -78,8 +78,8 @@ public class FindSolution {
 		System.out.println("Deep steps: " + deepSteps + "\n");
 		
 		if (deepSteps == 0) 
-			if (gameBoard.ruchyJuzWykonane == gameBoard.possibleMoves){
-				System.out.println("koniecTestu = true. Deep steps: " + deepSteps + " Ruchy już wykonanane: " + gameBoard.ruchyJuzWykonane + ". Możliwe ruchy: " + gameBoard.possibleMoves);
+			if (gameBoard.movesDone == gameBoard.possibleMoves){
+				System.out.println("koniecTestu = true. Deep steps: " + deepSteps + " Ruchy już wykonanane: " + gameBoard.movesDone + ". Możliwe ruchy: " + gameBoard.possibleMoves);
 				koniecTestu = true;
 				czekajNaEnter();
 			}
@@ -87,7 +87,7 @@ public class FindSolution {
 	} 
 	while (!koniecTestu);
 	
-	System.out.println("WYJSCIE. Deep steps: " + deepSteps + " Ruchy już wykonanane: " + gameBoard.ruchyJuzWykonane + ". Możliwe ruchy: " + gameBoard.possibleMoves);
+	System.out.println("WYJSCIE. Deep steps: " + deepSteps + " Ruchy już wykonanane: " + gameBoard.movesDone + ". Możliwe ruchy: " + gameBoard.possibleMoves);
 	
 };
 
@@ -100,12 +100,12 @@ public class FindSolution {
 						cardOnHand = gameBoard.getCardFromZeroBoardStack();
 						gameBoard.pushCardToStack("finishStack", i, cardOnHand);
 						sprawdzoneDostepneRuchy = 1;					
-						gameBoard.ruchyJuzWykonane = 1;
-						step = new UndoStep(cardOnHand, 0, "finishStack", i, gameBoard.ruchyJuzWykonane, gameBoard.possibleMoves);
+						gameBoard.movesDone = 1;
+						step = new UndoStep(cardOnHand, 0, "finishStack", i, gameBoard.movesDone, gameBoard.possibleMoves);
 						gameBoard.pushCardToStack("finishStack", i, cardOnHand);
 						gameBoard.pushUndo(step);	
 						deepSteps ++;
-						gameBoard.ruchyJuzWykonane = 0;
+						gameBoard.movesDone = 0;
 						System.out.println("Przelozono " + cardOnHand + " na board final");
 						//czekajNaEnter();
 						cardOnHand = null;
@@ -127,12 +127,12 @@ public class FindSolution {
 							cardOnHand = gameBoard.getCardFromBoardStack(numberStack);
 							gameBoard.pushCardToStack("finishStack", i, cardOnHand);
 							sprawdzoneDostepneRuchy = 1;					
-							gameBoard.ruchyJuzWykonane = 1;
-							step = new UndoStep(cardOnHand, numberStack, "finishStack", i, gameBoard.ruchyJuzWykonane, gameBoard.possibleMoves);
+							gameBoard.movesDone = 1;
+							step = new UndoStep(cardOnHand, numberStack, "finishStack", i, gameBoard.movesDone, gameBoard.possibleMoves);
 							gameBoard.pushCardToStack("finishStack", i, cardOnHand);
 							gameBoard.pushUndo(step);	
 							deepSteps ++;
-							gameBoard.ruchyJuzWykonane = 0;
+							gameBoard.movesDone = 0;
 							System.out.println("Prze�o�ono " + cardOnHand + " z " + numberStack + " na board final");
 							//czekajNaEnter();
 							cardOnHand = null;
@@ -152,14 +152,14 @@ public class FindSolution {
 			sprawdzoneDostepneRuchy++;
 			//System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + ". Ruchy już wykonane: " + gameBoard.ruchyJuzWykonane);
 		
-			if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
+			if (sprawdzoneDostepneRuchy == gameBoard.movesDone + 1) {
 				System.out.println("Liczba ruchów wykonanych w tym układzie = 0. Stos startowy = " + gameBoard.getSizeStartStack() + " . Robię kolejny krok: biorę nową kartę ze stosu startowego: " + gameBoard.readCardFromStartStack());		
-				gameBoard.ruchyJuzWykonane++;	
-				step = new UndoStep(gameBoard.readCardFromStartStack(), -1, "boardStack", 0, gameBoard.ruchyJuzWykonane, gameBoard.possibleMoves);
+				gameBoard.movesDone++;	
+				step = new UndoStep(gameBoard.readCardFromStartStack(), -1, "boardStack", 0, gameBoard.movesDone, gameBoard.possibleMoves);
 				gameBoard.pushCardToStack("boardStack", 0, gameBoard.getCardFromStartStack());	
 				gameBoard.pushUndo(step);	
 				deepSteps ++;
-				gameBoard.ruchyJuzWykonane = 0;
+				gameBoard.movesDone = 0;
 				gameBoard.possibleMoves = possibleMoves.count(gameBoard);
 				cardOnHand = null;
 				
@@ -185,15 +185,15 @@ public class FindSolution {
 				if (isCompatibilityCardOnStackAndOnHand(i, "finishStack", gameBoard)) 	{
 					//System.out.println("MOŻNA wziąć ze stosu zerowego kartę " + cardOnHand + " i położyć na stos Final numer: " + i);
 					sprawdzoneDostepneRuchy++;
-					if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
+					if (sprawdzoneDostepneRuchy == gameBoard.movesDone + 1) {
 						cardOnHand = gameBoard.getCardFromZeroBoardStack();
 						
-						gameBoard.ruchyJuzWykonane++;
-						step = new UndoStep(cardOnHand, 0, "finishStack", i, gameBoard.ruchyJuzWykonane, gameBoard.possibleMoves);
+						gameBoard.movesDone++;
+						step = new UndoStep(cardOnHand, 0, "finishStack", i, gameBoard.movesDone, gameBoard.possibleMoves);
 						gameBoard.pushCardToStack("finishStack", i, cardOnHand);
 						gameBoard.pushUndo(step);	
 						deepSteps ++;
-						gameBoard.ruchyJuzWykonane = 0;
+						gameBoard.movesDone = 0;
 						System.out.println("Robię kolejny krok: biorę kartę ze stosu zerowego kartę " + cardOnHand + " i kładę ją na stos Finish numer: " + i);
 						
 						gameBoard.possibleMoves = possibleMoves.count(gameBoard);
@@ -209,20 +209,20 @@ public class FindSolution {
 						//System.out.println("MOŻNA wziąć ze stosu zerowego kartę " + cardOnHand + " i położyć na stos Board numer: " + i);
 						sprawdzoneDostepneRuchy++;
 					
-						System.out.println("SPRAWDZONE dostępne ruchy : " + sprawdzoneDostepneRuchy + " Ruchy już wykonane: " + gameBoard.ruchyJuzWykonane + ". Mozliwe ruchy: " + gameBoard.possibleMoves);
-						if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
+						System.out.println("SPRAWDZONE dostępne ruchy : " + sprawdzoneDostepneRuchy + " Ruchy już wykonane: " + gameBoard.movesDone + ". Mozliwe ruchy: " + gameBoard.possibleMoves);
+						if (sprawdzoneDostepneRuchy == gameBoard.movesDone + 1) {
 							cardOnHand = gameBoard.getCardFromZeroBoardStack();
 							
 							cardOnHand.setSourceStack(0);
 							
 							System.out.println("Stos: 0. " + "Wzięta z niego karta: " + cardOnHand + ". Karta pod spodem: " + gameBoard.readCardFromStack("boardStack", 0));
 							
-							gameBoard.ruchyJuzWykonane++;
-							step = new UndoStep(cardOnHand, 0, "boardStack", i, gameBoard.ruchyJuzWykonane, gameBoard.possibleMoves);
+							gameBoard.movesDone++;
+							step = new UndoStep(cardOnHand, 0, "boardStack", i, gameBoard.movesDone, gameBoard.possibleMoves);
 							gameBoard.pushCardToStack("boardStack", i, cardOnHand);
 							gameBoard.pushUndo(step);	
 							deepSteps ++;
-							gameBoard.ruchyJuzWykonane = 0;
+							gameBoard.movesDone = 0;
 							System.out.println("Robię kolejny krok: biorę kartę ze stosu zerowego kartę " + cardOnHand + " i kładę ją na stos Board numer: " + i);
 							
 							gameBoard.possibleMoves = possibleMoves.count(gameBoard);
@@ -251,7 +251,7 @@ public class FindSolution {
 						//System.out.println("Można wziąć ze stosu Board numer: "  + sourceStackNumberCardOnHand + " kartę " + cardOnHand + " i położyć na stos Finish numer: " + numberOfFinishStack);
 						
 						sprawdzoneDostepneRuchy++;
-						if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
+						if (sprawdzoneDostepneRuchy == gameBoard.movesDone + 1) {
 							cardOnHand = gameBoard.getCardFromBoardStack(numberStack);
 							
 							if (gameBoard.getSizeBoardStack(numberStack)>0){
@@ -268,15 +268,15 @@ public class FindSolution {
 							System.out.println("");
 							System.out.println("Stos: " + cardOnHand.readSourceStack() +  ". Wzięta z niego karta: " + cardOnHand + ". Karta pod spodem: " + cardOnHand.readCardUnder() + ". Liczba pozostałych kart na stosie: " + cardOnHand.readPositionOnStack());
 							
-							gameBoard.ruchyJuzWykonane++;
+							gameBoard.movesDone++;
 							
-							System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + ". Ruchy już wykonane na tym poziomie: " + gameBoard.ruchyJuzWykonane + ". Mozliwe ruchy: " + gameBoard.possibleMoves);	
+							System.out.println("Sprawdzone dostępne ruchy: " + sprawdzoneDostepneRuchy + ". Ruchy już wykonane na tym poziomie: " + gameBoard.movesDone + ". Mozliwe ruchy: " + gameBoard.possibleMoves);	
 							
-							step = new UndoStep(cardOnHand, numberStack, "finishStack", numberOfFinishStack, gameBoard.ruchyJuzWykonane, gameBoard.possibleMoves);
+							step = new UndoStep(cardOnHand, numberStack, "finishStack", numberOfFinishStack, gameBoard.movesDone, gameBoard.possibleMoves);
 							gameBoard.pushCardToStack("finishStack", numberOfFinishStack, cardOnHand);
 							gameBoard.pushUndo(step);	
 							deepSteps ++;
-							gameBoard.ruchyJuzWykonane = 0;
+							gameBoard.movesDone = 0;
 							
 							System.out.println("ROBIE kolejny krok: biorę kartę ze stosu " + numberStack + ": " + cardOnHand + " i kładę ją na stos Finish numer: " + numberOfFinishStack);
 							dokonanoRuchNaFinishBoard = true;
@@ -298,14 +298,14 @@ public class FindSolution {
 							
 							cardOnHand = gameBoard.getCardFromBoardStack(numberStack);
 							
-							if (sprawdzoneDostepneRuchy == gameBoard.ruchyJuzWykonane + 1) {
+							if (sprawdzoneDostepneRuchy == gameBoard.movesDone + 1) {
 								
-								gameBoard.ruchyJuzWykonane++;
-								step = new UndoStep(cardOnHand, numberStack, "boardStack", numberOfBoardStack, gameBoard.ruchyJuzWykonane, gameBoard.possibleMoves);
+								gameBoard.movesDone++;
+								step = new UndoStep(cardOnHand, numberStack, "boardStack", numberOfBoardStack, gameBoard.movesDone, gameBoard.possibleMoves);
 								gameBoard.pushCardToStack("boardStack", numberOfBoardStack, cardOnHand);
 								gameBoard.pushUndo(step);	
 								deepSteps ++;
-								gameBoard.ruchyJuzWykonane = 0;
+								gameBoard.movesDone = 0;
 								System.out.println("ROBIE kolejny krok: biorę kartę ze stosu " + numberStack + ": " + cardOnHand + " i kładę ją na stos Board numer: " + numberOfBoardStack);
 								
 								gameBoard.possibleMoves = possibleMoves.count(gameBoard);
@@ -389,5 +389,6 @@ public class FindSolution {
 		System.out.println("Wcisniej ENTER");
 		Scanner skaner = new Scanner(System.in);
 		String a = skaner.nextLine();
+		skaner.close();
 	}
 }
